@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Standalone output for lean production deployment (ideal for AWS EC2/Docker)
+  output: 'standalone',
+
   // Image optimisation
   images: {
     formats: ['image/webp'],
