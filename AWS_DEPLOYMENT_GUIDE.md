@@ -6,12 +6,14 @@ This guide shows you how to host **Anjali's Kitchen** on the **AWS Free Tier** a
 
 ## 🟢 Live Deployment Status
 
-- **Live URL**: [http://3.27.1.14/](http://3.27.1.14/)
+- **Live Secure URL (HTTPS)**: [https://3.27.1.14.sslip.io/](https://3.27.1.14.sslip.io/) (Accessible on all iPhones, Androids, & PCs without security warnings)
+- **Direct IP (Auto-Redirects to HTTPS)**: [http://3.27.1.14/](http://3.27.1.14/)
+- **SSL Certificate**: Let's Encrypt TLS (valid through Jan 2027 with automatic auto-renewal)
 - **AWS Region**: `ap-southeast-2` (Sydney)
 - **Instance ID**: `i-045f26ffa5b76d95f` (`t3.micro`, 1 vCPU, 1 GB RAM, 30 GB EBS)
 - **OS**: Amazon Linux 2023
 - **Process Manager**: PM2 running Next.js Standalone (`.next/standalone/server.js`) on port 3000
-- **Web Server**: Nginx 1.30 reverse proxy on port 80 with Gzip compression
+- **Web Server**: Nginx 1.30 reverse proxy on port 80 & 443 with Gzip & HTTP/2
 - **Database**: PostgreSQL 16 on `localhost:5432` with `citext` & `pgcrypto` extensions
 - **OOM Protection**: 4.0 GB Swap space active (`/swapfile`)
 
@@ -304,3 +306,5 @@ pm2 restart anjalis-kitchen
 | **Web Server** | Nginx | Buffers connections & provides Gzip |
 | **Process Manager**| PM2 | Restarts automatically if errors occur |
 | **Database** | RDS Free Tier / Neon Free Postgres | Stores products, hampers, and festivals |
+
+<!-- CHECKPOINT id="ckpt_mv5m4c9r_zz4s7v" time="2026-10-12T18:55:47.487Z" note="auto" fixes=0 questions=0 highlights=0 sections="" -->

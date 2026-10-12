@@ -33,13 +33,13 @@ fi
 echo "=== 3. Writing .env ==="
 cat << 'EOF' > .env
 NODE_ENV=production
-APP_URL=http://3.27.1.14
+APP_URL=https://3.27.1.14.sslip.io
 DATABASE_URL=postgresql://anjali:change-me@127.0.0.1:5432/anjalis_kitchen?schema=public
 SESSION_COOKIE_NAME=ak_session
 SESSION_IDLE_HOURS=12
 SESSION_ABSOLUTE_DAYS=7
 CSRF_SECRET=ak-prod-secret-2801f1f-anjalis-kitchen-2026
-INSECURE_COOKIES=true
+INSECURE_COOKIES=false
 STORAGE_DRIVER=local
 STORAGE_LOCAL_DIR=./uploads
 STORAGE_PUBLIC_BASE_URL=/media
