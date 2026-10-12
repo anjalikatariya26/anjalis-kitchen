@@ -4,6 +4,40 @@ This guide shows you how to host **Anjali's Kitchen** on the **AWS Free Tier** a
 
 ---
 
+## 🟢 Live Deployment Status
+
+- **Live URL**: [http://3.27.1.14/](http://3.27.1.14/)
+- **AWS Region**: `ap-southeast-2` (Sydney)
+- **Instance ID**: `i-045f26ffa5b76d95f` (`t3.micro`, 1 vCPU, 1 GB RAM, 30 GB EBS)
+- **OS**: Amazon Linux 2023
+- **Process Manager**: PM2 running Next.js Standalone (`.next/standalone/server.js`) on port 3000
+- **Web Server**: Nginx 1.30 reverse proxy on port 80 with Gzip compression
+- **Database**: PostgreSQL 16 on `localhost:5432` with `citext` & `pgcrypto` extensions
+- **OOM Protection**: 4.0 GB Swap space active (`/swapfile`)
+
+### Quick Server Commands (via SSH)
+
+Connect from your PC terminal:
+
+```bash
+ssh -i "e:\Antigravity\Mom Project\anjalis-kitchen\pem\anjali-key.pem" ec2-user@3.27.1.14
+```
+
+View live process status & memory:
+
+```bash
+pm2 status
+pm2 logs anjalis-kitchen --lines 50
+```
+
+Deploy latest code with 1 command:
+
+```bash
+bash /home/ec2-user/setup-ec2.sh
+```
+
+---
+
 ## 1. Why Servers Crash & How We Solve It (Architecture)
 
 ### The Problem on AWS Free Tier
