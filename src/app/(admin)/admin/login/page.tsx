@@ -40,7 +40,7 @@ export default async function AdminLoginPage({
       <div className="absolute top-[12%] left-[8%] text-4xl opacity-15 animate-float-slow">🪔</div>
       <div className="absolute top-[25%] right-[10%] text-3xl opacity-10 animate-float-medium" style={{ animationDelay: '2s' }}>🍯</div>
       <div className="absolute bottom-[15%] left-[15%] text-3xl opacity-10 animate-float-fast" style={{ animationDelay: '1s' }}>🧈</div>
-      <div className="absolute bottom-[30%] right-[15%] text-2xl opacity-10 animate-float-slow" style={{ animationDelay: '3s' }}>🌿</div>
+      <div className="absolute bottom-[30%] right-[15%] text-2xl opacity-10 animate-float-slow" style={{ animationDelay: '3s' }}>🪷</div>
 
       {/* Sparkle particles */}
       <div className="absolute top-16 left-[30%] w-2 h-2 rounded-full bg-amber-400/40 animate-twinkle" />

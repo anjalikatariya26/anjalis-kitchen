@@ -33,14 +33,14 @@ export const metadata: Metadata = {
 };
 
 const categoryCards = [
-  { name: 'Pure Ghee Laddu', slug: 'laddu', img: '/images/ladoo.jpg', count: '5 Varieties', badge: 'Pure Ghee', emoji: '🪔' },
-  { name: 'Ukadiche Modak', slug: 'modak', img: '/images/modak.jpg', count: 'Steamed & Fried', badge: 'Festival Special', emoji: '🙏' },
-  { name: 'Diwali Faral Boxes', slug: 'diwali-special', img: '/images/hamper.jpg', count: 'Gift Hampers', badge: 'Royal Edition', emoji: '🎁' },
-  { name: 'Special Poha Chivda', slug: 'chivda', img: '/images/chivda.jpg', count: 'Crispy Fresh', badge: 'Bestseller', emoji: '✨' },
-  { name: 'Namkeen & Chakli', slug: 'namkeen-farsan', img: '/images/namkeen.jpg', count: 'Authentic Spices', badge: '100% Veg', emoji: '🌿' },
-  { name: 'Peanut & Til Chikki', slug: 'chikki', img: '/images/chikki.jpg', count: 'Organic Jaggery', badge: 'Crunchy', emoji: '🥜' },
-  { name: 'Sweets & Karanji', slug: 'sweets', img: '/images/ladoo.jpg', count: 'Traditional Khoya', badge: 'Homemade', emoji: '🍯' },
-  { name: 'Curated Hampers', slug: 'hampers', img: '/images/hamper.jpg', count: 'Custom Packaging', badge: 'Gifting', emoji: '🎀' },
+  { name: 'Pure Ghee Laddu', slug: 'laddu', img: '/images/ladoo.jpg', count: '5 Varieties', badge: 'Pure Ghee' },
+  { name: 'Ukadiche Modak', slug: 'modak', img: '/images/modak.jpg', count: 'Steamed & Fried', badge: 'Festival Special' },
+  { name: 'Diwali Faral Boxes', slug: 'diwali-special', img: '/images/hamper.jpg', count: 'Gift Hampers', badge: 'Royal Edition' },
+  { name: 'Special Poha Chivda', slug: 'chivda', img: '/images/chivda.jpg', count: 'Crispy Fresh', badge: 'Bestseller' },
+  { name: 'Namkeen & Chakli', slug: 'namkeen-farsan', img: '/images/namkeen.jpg', count: 'Authentic Spices', badge: '100% Veg' },
+  { name: 'Peanut & Til Chikki', slug: 'chikki', img: '/images/chikki.jpg', count: 'Organic Jaggery', badge: 'Crunchy' },
+  { name: 'Sweets & Karanji', slug: 'sweets', img: '/images/ladoo.jpg', count: 'Traditional Khoya', badge: 'Homemade' },
+  { name: 'Curated Hampers', slug: 'hampers', img: '/images/hamper.jpg', count: 'Custom Packaging', badge: 'Gifting' },
 ];
 
 const festivals = [
@@ -62,7 +62,8 @@ const popularProducts = [
     rating: '5.0',
     reviews: '48',
     isJain: true,
-    badge: '🏆 Bestseller',
+    badgeText: 'Bestseller',
+    badgeIcon: Crown,
     desc: 'Soft steamed rice flour modak stuffed with fresh coconut, organic jaggery & nutmeg drizzled with pure cow ghee.',
   },
   {
@@ -75,7 +76,8 @@ const popularProducts = [
     rating: '4.9',
     reviews: '62',
     isJain: true,
-    badge: '✨ Pure Cow Ghee',
+    badgeText: 'Pure Cow Ghee',
+    badgeIcon: Award,
     desc: 'Slow-roasted gram flour in artisanal cow ghee, silver varak leaf, cardamom, and crunchy almond slivers.',
   },
   {
@@ -88,7 +90,8 @@ const popularProducts = [
     rating: '5.0',
     reviews: '34',
     isJain: true,
-    badge: '🎁 Royal Gift Box',
+    badgeText: 'Royal Gift Box',
+    badgeIcon: Gift,
     desc: 'Curated 4-tier festive box with Chakli, Karanji, Besan Ladoo, Spicy Chivda, and ethnic clay diya lamps.',
   },
 ];
@@ -317,7 +320,6 @@ export default function HomePage() {
                 <span className="absolute top-2.5 left-2.5 text-[10px] font-bold text-slate-950 bg-gradient-to-r from-amber-300 to-amber-400 px-2.5 py-0.5 rounded-full shadow-lg">
                   {cat.badge}
                 </span>
-                <span className="absolute bottom-2.5 right-2.5 text-xl">{cat.emoji}</span>
               </div>
 
               {/* Text footer */}
@@ -344,8 +346,8 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 reveal-up">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-bold text-amber-300">
-                <Flame className="h-3.5 w-3.5 text-orange-400" />
-                Festive Highlights
+                <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-twinkle" />
+                <span>Festive Highlights</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold font-serif text-amber-100">
                 Popular This Season
@@ -375,14 +377,16 @@ export default function HomePage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute top-3 left-3">
-                      <span className="text-xs font-bold text-slate-950 bg-gradient-to-r from-amber-300 to-amber-400 px-3 py-1 rounded-full shadow-lg">
-                        {prod.badge}
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-amber-300 to-amber-400 px-3 py-1 rounded-full shadow-lg">
+                        <prod.badgeIcon className="h-3.5 w-3.5 text-slate-950" />
+                        <span>{prod.badgeText}</span>
                       </span>
                     </div>
                     {prod.isJain && (
                       <div className="absolute top-3 right-3">
-                        <span className="text-[10px] font-bold text-emerald-900 bg-emerald-300 px-2 py-0.5 rounded-full">
-                          🌿 Jain
+                        <span className="inline-flex items-center gap-1.5 bg-amber-100/95 text-amber-950 font-bold px-2.5 py-1 rounded-full border border-amber-300 shadow-md backdrop-blur text-xs">
+                          <JainSymbol size={13} />
+                          <span>Jain Available</span>
                         </span>
                       </div>
                     )}

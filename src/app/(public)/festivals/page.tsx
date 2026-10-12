@@ -105,8 +105,8 @@ export default function FestivalsPage() {
           
           {/* Spatial floating badge row — creates depth illusion */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-4 reveal-up delay-300">
-            {['🪷 Ganesh Chaturthi', '🪔 Diwali', '🎀 Rakhi', '🔱 Navratri', '🪁 Sankranti'].map((tag, i) => (
-              <span key={i} className="glass rounded-full px-3.5 py-1.5 text-xs font-semibold text-amber-200/80" style={{ animationDelay: `${i * 100}ms` }}>
+            {['Ganesh Chaturthi', 'Diwali Faral', 'Raksha Bandhan', 'Navratri Upvas', 'Makar Sankranti'].map((tag, i) => (
+              <span key={i} className="glass rounded-full px-4 py-1.5 text-xs font-bold text-amber-200 border border-amber-400/30 shadow-xs" style={{ animationDelay: `${i * 100}ms` }}>
                 {tag}
               </span>
             ))}

@@ -143,11 +143,6 @@ export default function HampersPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     
-                    {/* Floating emoji — spatial depth */}
-                    <span className="absolute bottom-4 right-4 text-4xl opacity-80 group-hover:scale-125 group-hover:-translate-y-2 transition-all duration-500 drop-shadow-xl">
-                      {hamper.emoji}
-                    </span>
-                    
                     {/* Festival tag */}
                     <span className={`absolute top-3 left-3 text-[11px] font-bold text-white bg-gradient-to-r ${hamper.gradient} px-3 py-1 rounded-full shadow-lg`}>
                       {hamper.festival}

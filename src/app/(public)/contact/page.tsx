@@ -3,7 +3,8 @@
  * 3D Card Effects, Animated Gradients, and Professional Layout.
  */
 import type { Metadata } from 'next';
-import { Phone, MessageCircle, MapPin, AtSign, Clock, ChefHat, Heart, Leaf, Award, Star, Sparkles } from 'lucide-react';
+import { Phone, MessageCircle, MapPin, AtSign, Clock, ChefHat, Heart, Leaf, Sparkles } from 'lucide-react';
+import { JainSymbol } from '@/components/ui/JainSymbol';
 
 export const metadata: Metadata = {
   title: "Contact — Anjali's Kitchen",
@@ -37,9 +38,13 @@ export default function ContactPage() {
             shortcuts, no compromises.
           </p>
 
-          <p className="text-sm font-semibold text-amber-300/80">
-            Made fresh to order · 100% Vegetarian · Jain options available
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm font-semibold text-amber-200 pt-1">
+            <span>Made Fresh to Order</span>
+            <span>•</span>
+            <span>100% Pure Vegetarian</span>
+            <span>•</span>
+            <span className="inline-flex items-center gap-1.5"><JainSymbol size={14} /> Jain Options Available</span>
+          </div>
         </div>
       </section>
 
