@@ -1,13 +1,12 @@
 /**
- * Public Hampers Page — Luxury Festival Gift Hampers Showcase.
- * Featuring Studio Photography Renders, Box Contents, Pricing, and Direct Booking.
+ * Public Hampers Page — Luxury Festival Gift Hampers with Spatial UI.
+ * Features: 3D depth layers, floating gift elements, premium glass cards,
+ * parallax images, and theme-specific decorative elements.
  */
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Gift, MessageCircle, Sparkles, Check, ArrowRight, ShieldCheck } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Gift, MessageCircle, Sparkles, Check, ArrowRight, ShieldCheck, Crown, Star, Heart } from 'lucide-react';
 import { generateWhatsAppLink } from '@/lib/whatsapp';
 
 export const metadata: Metadata = {
@@ -31,6 +30,9 @@ const hampersList = [
       'Spicy Poha Chivda (500g)',
       'Handcrafted Ethnic Clay Diya (2 Pcs)',
     ],
+    emoji: '🪔',
+    gradient: 'from-amber-500 to-orange-600',
+    popular: true,
   },
   {
     id: 'h2',
@@ -46,6 +48,9 @@ const hampersList = [
       'Fresh Panchamrut Box (1 Pc)',
       'Brass Puja Diya (1 Pc)',
     ],
+    emoji: '🪷',
+    gradient: 'from-orange-500 to-red-600',
+    popular: false,
   },
   {
     id: 'h3',
@@ -60,130 +65,195 @@ const hampersList = [
       'Shengdana & Til Chikki (500g)',
       'Sweet Diamond Shankarpale (500g)',
     ],
+    emoji: '🎀',
+    gradient: 'from-rose-500 to-pink-600',
+    popular: false,
   },
 ];
 
 export default function HampersPage() {
   return (
     <div className="bg-[#FFFDF9] min-h-screen text-slate-900">
-      {/* Hero Header */}
-      <section className="bg-gradient-to-b from-[#3D0C11] via-[#5C131D] to-[#2B080C] text-white py-14 sm:py-20 border-b border-amber-500/20 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
+      {/* Hero Header with Spatial Depth Layers */}
+      <section className="relative bg-gradient-to-br from-[#2B080C] via-[#4A101A] to-[#1A0508] text-white py-16 sm:py-24 overflow-hidden wave-divider">
+        {/* Deep layer — ambient orbs */}
+        <div className="orb orb-gold w-[500px] h-[500px] -top-32 right-0" style={{ animationDelay: '0s' }} />
+        <div className="orb orb-rose w-[400px] h-[400px] bottom-0 -left-20" style={{ animationDelay: '5s' }} />
+        
+        {/* Mid layer — floating gift theme elements */}
+        <div className="absolute top-[15%] left-[10%] text-4xl opacity-20 animate-float-slow">🎁</div>
+        <div className="absolute top-[30%] right-[8%] text-3xl opacity-15 animate-float-medium" style={{ animationDelay: '2s' }}>🪔</div>
+        <div className="absolute bottom-[25%] left-[25%] text-5xl opacity-10 animate-float-slow" style={{ animationDelay: '4s' }}>🎀</div>
+        <div className="absolute top-[55%] right-[20%] text-2xl opacity-15 animate-float-fast" style={{ animationDelay: '1s' }}>✨</div>
+        
+        {/* Near layer — sparkle particles */}
+        <div className="absolute top-12 left-[20%] w-2 h-2 rounded-full bg-amber-400/50 animate-twinkle" />
+        <div className="absolute top-28 right-[25%] w-1.5 h-1.5 rounded-full bg-amber-300/40 animate-twinkle" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-20 left-[40%] w-2 h-2 rounded-full bg-rose-400/30 animate-twinkle" style={{ animationDelay: '2s' }} />
 
-        <div className="relative mx-auto max-w-7xl px-4 text-center space-y-4">
-          <Badge variant="gold" className="px-3.5 py-1 text-xs mx-auto">
-            <Gift className="mr-1.5 h-3.5 w-3.5 inline text-amber-400" /> Curated Gifting
-          </Badge>
+        {/* Foreground content */}
+        <div className="relative mx-auto max-w-7xl px-4 text-center space-y-5 reveal-up" style={{ zIndex: 10 }}>
+          <div className="inline-flex items-center gap-2 rounded-full glass px-5 py-2 text-xs sm:text-sm font-bold text-amber-300 mx-auto">
+            <Gift className="h-4 w-4 text-amber-400 animate-float-fast" />
+            Curated Gifting
+          </div>
 
-          <h1 className="text-3xl sm:text-5xl font-bold font-serif text-amber-100 tracking-tight">
-            Royal Festival Gift Hampers
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-amber-100 tracking-tight leading-[1.1]">
+            Royal Festival <span className="text-shimmer">Gift Hampers</span>
           </h1>
 
-          <p className="max-w-2xl mx-auto text-sm sm:text-base text-amber-50/80 leading-relaxed">
+          <p className="max-w-2xl mx-auto text-sm sm:text-base text-amber-50/75 leading-relaxed">
             Beautifully packaged in eco-friendly ethnic gift boxes. Perfect for family celebrations, corporate gifting, and festive greetings.
           </p>
         </div>
       </section>
 
-      {/* Hampers Showcase Grid */}
-      <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Hampers Showcase Grid — 3D Cards */}
+      <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-16 relative">
+        {/* Spatial background textures */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,_rgba(199,154,59,0.04)_0%,_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,_rgba(122,31,43,0.03)_0%,_transparent_50%)]" />
+
+        <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-8 grid-stagger">
           {hampersList.map((hamper) => {
             const whatsappUrl = generateWhatsAppLink({
               text: `Hello Anjali's Kitchen! I would like to order the "${hamper.name}" (${hamper.price}).`,
             });
 
             return (
-              <Card
+              <div
                 key={hamper.id}
-                className="overflow-hidden border-slate-200 bg-white shadow-sm hover:shadow-2xl hover:border-maroon-700 transition-all duration-300 flex flex-col justify-between group"
+                className="rounded-3xl border border-slate-200/80 bg-white overflow-hidden shadow-sm card-3d flex flex-col justify-between group hover-shine relative"
               >
+                {/* Popular badge — spatial floating element */}
+                {hamper.popular && (
+                  <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg animate-pulse-glow">
+                    <Crown className="h-3 w-3" />
+                    Most Popular
+                  </div>
+                )}
+                
                 <div>
-                  {/* Image */}
+                  {/* Image with parallax */}
                   <div className="aspect-[4/3] w-full overflow-hidden bg-slate-900 relative">
                     <img
                       src={hamper.image}
                       alt={hamper.name}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="h-full w-full object-cover img-parallax"
                     />
-                    <div className="absolute top-3 left-3">
-                      <span className="text-[11px] font-bold text-slate-950 bg-amber-400 px-3 py-1 rounded-full shadow-md">
-                        {hamper.festival}
-                      </span>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    
+                    {/* Floating emoji — spatial depth */}
+                    <span className="absolute bottom-4 right-4 text-4xl opacity-80 group-hover:scale-125 group-hover:-translate-y-2 transition-all duration-500 drop-shadow-xl">
+                      {hamper.emoji}
+                    </span>
+                    
+                    {/* Festival tag */}
+                    <span className={`absolute top-3 left-3 text-[11px] font-bold text-white bg-gradient-to-r ${hamper.gradient} px-3 py-1 rounded-full shadow-lg`}>
+                      {hamper.festival}
+                    </span>
+                    
+                    {/* Price overlay — glass effect */}
+                    <div className="absolute bottom-3 left-3 glass-dark rounded-xl px-3 py-1.5">
+                      <span className="text-lg font-bold text-amber-300">{hamper.price}</span>
                     </div>
                   </div>
 
                   {/* Body */}
-                  <CardContent className="p-6 space-y-4">
+                  <div className="p-6 space-y-4">
                     <div>
-                      <h3 className="font-bold font-serif text-xl text-slate-900 group-hover:text-maroon-800 transition-colors">
+                      <h3 className="font-bold font-serif text-xl text-slate-900 group-hover:text-[#7A1F2B] transition-colors">
                         {hamper.name}
                       </h3>
-                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
                         {hamper.description}
                       </p>
                     </div>
 
-                    {/* Box Items */}
-                    <div className="space-y-2 pt-2 border-t border-slate-100">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                        Included In Box:
+                    {/* Box Items with depth indicators */}
+                    <div className="space-y-2.5 pt-3 border-t border-slate-100">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 block">
+                        What&apos;s Inside
                       </span>
-                      <ul className="space-y-1.5 text-xs text-slate-700">
+                      <ul className="space-y-2 text-xs text-slate-700">
                         {hamper.items.map((item, idx) => (
-                          <li key={idx} className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-                            <span>{item}</span>
+                          <li key={idx} className="flex items-center gap-2.5">
+                            <div className={`w-5 h-5 rounded-md bg-gradient-to-br ${hamper.gradient} flex items-center justify-center text-white flex-shrink-0 shadow-sm`}>
+                              <Check className="h-3 w-3" />
+                            </div>
+                            <span className="font-medium">{item}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
-                  </CardContent>
+                  </div>
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 pt-0 border-t border-slate-100 mt-4 flex items-center justify-between">
+                <div className="p-6 pt-0 border-t border-slate-100 mt-2 pt-4 flex items-center justify-between">
                   <div>
-                    <span className="text-xs text-slate-400 block font-medium">Price</span>
-                    <span className="text-xl font-bold text-maroon-800">{hamper.price}</span>
+                    <span className="text-xs text-slate-400 block font-semibold uppercase tracking-wider">Price</span>
+                    <span className="text-xl font-bold text-[#7A1F2B]">{hamper.price}</span>
                   </div>
 
                   <a
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn btn-whatsapp btn-sm font-bold px-4 py-2 flex items-center gap-1.5"
+                    className="btn btn-whatsapp btn-sm font-bold px-4 py-2 flex items-center gap-1.5 hover-shine"
                   >
                     <MessageCircle className="h-4 w-4 fill-current" />
                     <span>Book Box</span>
                   </a>
                 </div>
-              </Card>
+              </div>
             );
           })}
         </div>
 
-        {/* 3-Step Process */}
-        <div className="rounded-3xl bg-amber-50/50 border border-amber-200/80 p-8 sm:p-10 space-y-6 text-center">
-          <h2 className="text-2xl font-bold font-serif text-slate-900">
-            How Hampers Work
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="p-5 rounded-2xl bg-white border border-amber-200/60 shadow-sm space-y-2">
-              <span className="w-8 h-8 rounded-full bg-maroon-800 text-amber-200 flex items-center justify-center font-bold text-sm mx-auto">1</span>
-              <h3 className="font-bold text-sm text-slate-900">Choose a Festive Theme</h3>
-              <p className="text-xs text-slate-600">Select from Diwali, Ganesh Chaturthi, Raksha Bandhan or custom options.</p>
+        {/* 3-Step Process — Spatial Cards */}
+        <div className="relative rounded-[2rem] bg-gradient-to-br from-amber-50 via-orange-50/50 to-rose-50 border border-amber-200/80 p-8 sm:p-12 space-y-8 text-center overflow-hidden reveal-up">
+          {/* Decorative depth dots */}
+          <div className="absolute top-6 right-8 opacity-15">
+            <div className="grid grid-cols-5 gap-1.5">
+              {[...Array(15)].map((_, i) => (
+                <div key={i} className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+              ))}
             </div>
-            <div className="p-5 rounded-2xl bg-white border border-amber-200/60 shadow-sm space-y-2">
-              <span className="w-8 h-8 rounded-full bg-maroon-800 text-amber-200 flex items-center justify-center font-bold text-sm mx-auto">2</span>
-              <h3 className="font-bold text-sm text-slate-900">Customise Your Items</h3>
-              <p className="text-xs text-slate-600">Select your preferred pack sizes, sweet/savory mix, and Jain items.</p>
+          </div>
+          <div className="absolute bottom-6 left-8 opacity-15">
+            <div className="grid grid-cols-4 gap-1.5">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+              ))}
             </div>
-            <div className="p-5 rounded-2xl bg-white border border-amber-200/60 shadow-sm space-y-2">
-              <span className="w-8 h-8 rounded-full bg-maroon-800 text-amber-200 flex items-center justify-center font-bold text-sm mx-auto">3</span>
-              <h3 className="font-bold text-sm text-slate-900">Order & Gift</h3>
-              <p className="text-xs text-slate-600">Place orders 3-4 days ahead. We package with ethnic box decorations.</p>
+          </div>
+          
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur border border-amber-200 px-4 py-1.5 text-xs font-bold text-amber-800 mb-3">
+              <Sparkles className="h-3.5 w-3.5" />
+              Simple Process
             </div>
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif text-slate-900">
+              How Hampers Work
+            </h2>
+          </div>
+
+          <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              { step: '1', title: 'Choose a Festive Theme', desc: 'Select from Diwali, Ganesh Chaturthi, Raksha Bandhan or custom options.', gradient: 'from-amber-500 to-orange-500' },
+              { step: '2', title: 'Customise Your Items', desc: 'Select your preferred pack sizes, sweet/savory mix, and Jain items.', gradient: 'from-rose-500 to-pink-500' },
+              { step: '3', title: 'Order & Gift', desc: 'Place orders 3-4 days ahead. We package with ethnic box decorations.', gradient: 'from-emerald-500 to-teal-500' },
+            ].map((s, i) => (
+              <div key={i} className="p-6 rounded-2xl bg-white border border-amber-200/50 shadow-sm space-y-3 card-3d relative overflow-hidden">
+                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${s.gradient}`} />
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.gradient} text-white flex items-center justify-center font-bold text-base mx-auto shadow-lg`}>
+                  {s.step}
+                </div>
+                <h3 className="font-bold text-sm text-slate-900">{s.title}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

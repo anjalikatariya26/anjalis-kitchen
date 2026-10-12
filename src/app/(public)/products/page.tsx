@@ -1,9 +1,10 @@
 /**
- * Public Menu/Products page — Browse all available products.
+ * Public Menu/Products page — Premium Catalogue with Hero Banner.
  * Per spec: Category filter chips, search, Jain toggle, product cards.
  */
 import type { Metadata } from 'next';
 import { ProductCatalogue } from '@/components/catalogue/ProductCatalogue';
+import { Utensils, Sparkles } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: "Menu — Anjali's Kitchen",
@@ -12,34 +13,35 @@ export const metadata: Metadata = {
 
 export default function ProductsPage() {
   return (
-    <div style={{ backgroundColor: 'var(--color-bg)' }}>
-      {/* Page hero */}
-      <section
-        className="py-10"
-        style={{
-          background: 'linear-gradient(180deg, var(--color-primary-light) 0%, var(--color-bg) 100%)',
-          borderBottom: '1px solid var(--color-border)',
-        }}
-      >
-        <div className="mx-auto px-4 text-center" style={{ maxWidth: 'var(--content-max-width)' }}>
-          <h1
-            className="font-bold"
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'var(--text-3xl)',
-              color: 'var(--color-primary)',
-            }}
-          >
-            Our Menu
+    <div className="bg-[#FFFDF9] min-h-screen">
+      {/* Hero Banner */}
+      <section className="relative bg-gradient-to-br from-[#2B080C] via-[#4A101A] to-[#1A0508] text-white py-14 sm:py-20 overflow-hidden wave-divider">
+        {/* Ambient orbs */}
+        <div className="orb orb-gold w-[400px] h-[400px] -top-20 right-0" />
+        <div className="orb orb-rose w-[300px] h-[300px] bottom-0 -left-20" />
+        
+        {/* Decorative particles */}
+        <div className="absolute top-10 left-[20%] w-2 h-2 rounded-full bg-amber-400/40 animate-twinkle" />
+        <div className="absolute top-20 right-[30%] w-1.5 h-1.5 rounded-full bg-amber-300/30 animate-twinkle" style={{ animationDelay: '1s' }} />
+        
+        <div className="relative mx-auto max-w-7xl px-4 text-center space-y-4 reveal-up">
+          <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-bold text-amber-300 mx-auto">
+            <Utensils className="h-3.5 w-3.5 text-amber-400" />
+            Fresh & Handcrafted
+          </div>
+          
+          <h1 className="text-3xl sm:text-5xl font-bold font-serif text-amber-100 tracking-tight">
+            Our <span className="text-shimmer">Complete Menu</span>
           </h1>
-          <p className="mt-2" style={{ color: 'var(--color-muted)', fontSize: 'var(--text-base)' }}>
-            Fresh, homemade Maharashtrian delicacies. Order 3–4 days in advance.
+          
+          <p className="max-w-2xl mx-auto text-sm sm:text-base text-amber-50/75 leading-relaxed">
+            Fresh, homemade Maharashtrian delicacies. Every item is made to order using pure cow ghee and traditional recipes. Order 3–4 days in advance.
           </p>
         </div>
       </section>
 
       {/* Catalogue */}
-      <section className="py-8">
+      <section className="py-10">
         <div className="mx-auto px-4" style={{ maxWidth: 'var(--content-max-width)' }}>
           <ProductCatalogue />
         </div>
