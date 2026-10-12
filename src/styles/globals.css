@@ -45,7 +45,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
-  color: var(--color-text);
+  color: inherit;
 }
 
 /* ── Scrollbar Styling ── */

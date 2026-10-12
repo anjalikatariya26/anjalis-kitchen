@@ -11,20 +11,20 @@ import {
   Sparkles,
   Gift,
   ChefHat,
-  Utensils,
+  BookOpen,
   ArrowRight,
-  ShieldCheck,
   Star,
   CheckCircle2,
   Clock,
   Flame,
   Award,
   Heart,
-  Leaf,
   Crown,
   Users,
   Truck,
 } from 'lucide-react';
+import { JainSymbol } from '@/components/ui/JainSymbol';
+import { ModakIcon, DiyaIcon, KalashIcon, RakhiIcon, SankrantiIcon } from '@/components/ui/FestivalIcons';
 
 export const metadata: Metadata = {
   title: "Anjali's Kitchen — Ghar Ka Swaad | Homemade Maharashtrian Delicacies",
@@ -44,11 +44,11 @@ const categoryCards = [
 ];
 
 const festivals = [
-  { name: 'Ganesh Chaturthi', slug: 'ganesh-chaturthi', tag: 'Bappa Prasad Special', emoji: '🪷' },
-  { name: 'Diwali Faral', slug: 'diwali-special', tag: 'Faral Gift Boxes', emoji: '🪔' },
-  { name: 'Navratri Special', slug: 'navratri', tag: 'Upvas Snacks', emoji: '🔱' },
-  { name: 'Raksha Bandhan', slug: 'raksha-bandhan', tag: 'Sweet Packs', emoji: '🎀' },
-  { name: 'Makar Sankranti', slug: 'makar-sankranti', tag: 'Tilgul Laddu', emoji: '🪁' },
+  { name: 'Ganesh Chaturthi', slug: 'ganesh-chaturthi', tag: 'Bappa Prasad Special', icon: ModakIcon, bg: 'from-amber-500/15 to-orange-500/15', border: 'border-amber-300' },
+  { name: 'Diwali Faral', slug: 'diwali-special', tag: 'Faral Gift Boxes', icon: DiyaIcon, bg: 'from-orange-500/15 to-red-500/15', border: 'border-orange-300' },
+  { name: 'Navratri Special', slug: 'navratri', tag: 'Upvas & Fasting Delights', icon: KalashIcon, bg: 'from-rose-500/15 to-amber-500/15', border: 'border-rose-300' },
+  { name: 'Raksha Bandhan', slug: 'raksha-bandhan', tag: 'Artisanal Sweet Packs', icon: RakhiIcon, bg: 'from-pink-500/15 to-rose-500/15', border: 'border-pink-300' },
+  { name: 'Makar Sankranti', slug: 'makar-sankranti', tag: 'Tilgul & Crunchy Chikki', icon: SankrantiIcon, bg: 'from-cyan-500/15 to-amber-500/15', border: 'border-cyan-300' },
 ];
 
 const popularProducts = [
@@ -127,9 +127,9 @@ export default function HomePage() {
                 <span>Homemade in Ahilyanagar • Made Fresh To Order</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold font-serif tracking-tight leading-[1.1] text-amber-50">
-                Ghar Ka Swaad, <br />
-                <span className="text-shimmer font-serif">
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold font-serif tracking-tight leading-[1.1]">
+                <span className="text-[#FFD700]">Ghar Ka Swaad,</span> <br />
+                <span className="text-amber-50">
                   Made Fresh With Love.
                 </span>
               </h1>
@@ -144,7 +144,7 @@ export default function HomePage() {
                   href="/products"
                   className="btn btn-gold btn-lg text-slate-950 font-bold px-8 py-3.5 shadow-2xl flex items-center gap-2 hover-shine"
                 >
-                  <Utensils className="h-5 w-5" />
+                  <BookOpen className="h-5 w-5" />
                   <span>Browse Full Menu</span>
                 </Link>
 
@@ -178,11 +178,11 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-1">
-                  <div className="flex items-center justify-center lg:justify-start gap-1.5 text-emerald-300 font-bold text-base sm:text-lg">
-                    <ShieldCheck className="h-4 w-4" />
+                  <div className="flex items-center justify-center lg:justify-start gap-1.5 text-amber-300 font-bold text-base sm:text-lg">
+                    <JainSymbol size={18} />
                     <span>Jain Line</span>
                   </div>
-                  <p className="text-xs text-amber-100/60">No Onion & No Garlic</p>
+                  <p className="text-xs text-amber-100/75">No Onion & No Garlic</p>
                 </div>
               </div>
             </div>
@@ -224,7 +224,7 @@ export default function HomePage() {
 
                 <div className="rounded-2xl glass p-3.5 flex items-center gap-3 hover:bg-white/10 transition-all duration-300">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0 animate-float-fast" style={{ animationDelay: '1s' }}>
-                    <Leaf className="h-5 w-5" />
+                    <JainSymbol size={22} />
                   </div>
                   <div>
                     <span className="text-xs font-bold text-amber-200 block">Jain Options Available</span>
@@ -253,25 +253,30 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-            {festivals.map((fest) => (
-              <Link
-                key={fest.slug}
-                href={`/festivals/${fest.slug}`}
-                className="flex-shrink-0 flex items-center gap-3 rounded-xl border border-amber-200 bg-white/80 backdrop-blur-sm px-4 py-2.5 shadow-sm hover:shadow-lg hover:border-amber-400 hover:-translate-y-0.5 transition-all duration-300 group"
-              >
-                <span className="text-lg">{fest.emoji}</span>
-                <div>
-                  <h3 className="text-xs font-bold text-slate-900 group-hover:text-[#7A1F2B] transition-colors">
-                    {fest.name}
-                  </h3>
-                  <span className="text-[10px] text-amber-700 font-semibold block">
-                    {fest.tag}
-                  </span>
-                </div>
-                <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-[#7A1F2B] group-hover:translate-x-1 transition-all ml-1" />
-              </Link>
-            ))}
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide pt-1">
+            {festivals.map((fest) => {
+              const IconComponent = fest.icon;
+              return (
+                <Link
+                  key={fest.slug}
+                  href={`/festivals/${fest.slug}`}
+                  className="flex-shrink-0 flex items-center gap-3.5 rounded-2xl border border-amber-200/90 bg-white/95 backdrop-blur-md px-4 py-3 shadow-sm hover:shadow-xl hover:border-amber-400 hover:-translate-y-1 transition-all duration-300 group"
+                >
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${fest.bg} ${fest.border} border flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
+                    <IconComponent size={26} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-[#7A1F2B] transition-colors">
+                      {fest.name}
+                    </h3>
+                    <span className="text-[11px] text-amber-700 font-semibold block">
+                      {fest.tag}
+                    </span>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-[#7A1F2B] group-hover:translate-x-1 transition-all ml-1" />
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

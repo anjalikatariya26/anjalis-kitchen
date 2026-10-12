@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Switch } from '@/components/ui/Switch';
 import { useToast } from '@/components/ui/Toast';
+import { JainSymbol } from '@/components/ui/JainSymbol';
 import {
   Plus,
   Trash2,
@@ -353,9 +354,21 @@ export function ProductForm() {
                         background: form.foodType === ft ? (ft === 'JAIN' ? '#FDF6E3' : 'var(--color-primary-light)') : 'var(--color-surface)',
                       }}
                     >
-                      <p className="text-sm font-semibold">{ft === 'JAIN' ? '🌿 Jain' : '🍽️ Regular'}</p>
+                      <div className="flex items-center justify-center gap-1.5 text-sm font-semibold">
+                        {ft === 'JAIN' ? (
+                          <>
+                            <JainSymbol size={16} />
+                            <span>Jain Diet</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-sm">🌱</span>
+                            <span>Regular (Pure Veg)</span>
+                          </>
+                        )}
+                      </div>
                       <p className="text-xs mt-1" style={{ color: 'var(--color-muted)' }}>
-                        {ft === 'JAIN' ? 'Suitable for Jain diet' : 'Vegetarian (not Jain-specific)'}
+                        {ft === 'JAIN' ? 'Strictly No Onion, No Garlic' : 'Pure vegetarian (traditional spices)'}
                       </p>
                     </button>
                   ))}

@@ -11,7 +11,7 @@ import {
   Calendar,
   FolderTree,
   Gift,
-  Utensils,
+  ChefHat,
   Plus,
   ToggleRight,
   Settings,
@@ -29,7 +29,7 @@ const statCards = [
   { label: 'Festivals', value: '0', icon: Calendar, gradient: 'from-purple-500 to-indigo-600', href: '/admin/festivals' },
   { label: 'Categories', value: '0', icon: FolderTree, gradient: 'from-teal-500 to-emerald-600', href: '/admin/categories' },
   { label: 'Hampers', value: '0', icon: Gift, gradient: 'from-orange-500 to-red-600', href: '/admin/hampers' },
-  { label: 'Regular', value: '0', icon: Utensils, gradient: 'from-slate-500 to-slate-700', href: '/admin/products?type=regular' },
+  { label: 'Regular', value: '0', icon: ChefHat, gradient: 'from-slate-500 to-slate-700', href: '/admin/products?type=regular' },
 ];
 
 const quickActions = [

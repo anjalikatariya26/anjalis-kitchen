@@ -8,13 +8,12 @@
  */
 
 import { useState } from 'react';
-import { Badge } from '@/components/ui/Badge';
 import { Card, CardContent } from '@/components/ui/Card';
 import { formatMoney } from '@/lib/money';
 import { generateProductOrderLink } from '@/lib/whatsapp';
+import { JainSymbol } from '@/components/ui/JainSymbol';
 import {
   MessageCircle,
-  Leaf,
   Clock,
   Package,
   ShieldCheck,
@@ -117,9 +116,10 @@ export function ProductDetailView({ product }: ProductDetailProps) {
             />
             {product.isJain && (
               <div className="absolute top-4 left-4">
-                <Badge variant="jain" className="shadow-md text-xs py-1 px-2.5">
-                  <Leaf className="mr-1 h-3.5 w-3.5 inline text-emerald-600" /> Jain Available
-                </Badge>
+                <span className="inline-flex items-center gap-1.5 bg-amber-100/95 backdrop-blur text-amber-950 font-bold px-3 py-1 rounded-full border border-amber-300 shadow-md text-xs">
+                  <JainSymbol size={14} />
+                  <span>Jain Available</span>
+                </span>
               </div>
             )}
           </div>
@@ -275,7 +275,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
                 <span className="text-[11px] font-semibold text-slate-700 block">100% Homemade</span>
               </div>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <Leaf className="h-5 w-5 mx-auto text-emerald-600 mb-1" />
+                <Check className="h-5 w-5 mx-auto text-emerald-600 mb-1" />
                 <span className="text-[11px] font-semibold text-slate-700 block">Pure Veg & Hygienic</span>
               </div>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">

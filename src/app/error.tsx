@@ -4,7 +4,8 @@
  * Error Page — Premium themed error boundary with spatial design.
  */
 import { useEffect } from 'react';
-import { AlertTriangle, RefreshCw, Home, ChefHat } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Error({
   error,
@@ -22,7 +23,7 @@ export default function Error({
       <div className="orb orb-gold w-[400px] h-[400px] -top-32 right-0" />
       <div className="orb orb-rose w-[300px] h-[300px] bottom-0 -left-20" />
 
-      <div className="absolute top-[30%] left-[15%] text-4xl opacity-10 animate-float-slow">🍳</div>
+      <div className="absolute top-[30%] left-[15%] text-4xl opacity-10 animate-float-slow">🥘</div>
       <div className="absolute bottom-[20%] right-[12%] text-3xl opacity-10 animate-float-medium" style={{ animationDelay: '2s' }}>🧈</div>
 
       <div className="relative text-center px-4 space-y-6 reveal-up" style={{ zIndex: 10 }}>
@@ -47,13 +48,13 @@ export default function Error({
             <RefreshCw className="h-4 w-4" />
             Try Again
           </button>
-          <a
+          <Link
             href="/"
             className="glass rounded-xl px-6 py-2.5 text-sm font-bold text-amber-200 hover:bg-white/10 transition-all flex items-center gap-2"
           >
             <Home className="h-4 w-4" />
             Go Home
-          </a>
+          </Link>
         </div>
       </div>
     </div>

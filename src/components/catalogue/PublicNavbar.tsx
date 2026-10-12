@@ -12,7 +12,7 @@ import { Menu, X, Phone, MessageCircle, Lock, ChefHat } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const navLinks = [
-  { label: 'Menu', href: '/products', emoji: '🍽️' },
+  { label: 'Menu', href: '/products', emoji: '📜' },
   { label: 'Festivals', href: '/festivals', emoji: '🪔' },
   { label: 'Hampers', href: '/hampers', emoji: '🎁' },
   { label: 'Contact', href: '/contact', emoji: '📞' },

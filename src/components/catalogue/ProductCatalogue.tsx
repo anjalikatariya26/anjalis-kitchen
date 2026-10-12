@@ -9,9 +9,9 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
-import { Badge } from '@/components/ui/Badge';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Search, MessageCircle, Package, Star, Leaf, ArrowRight } from 'lucide-react';
+import { Search, MessageCircle } from 'lucide-react';
+import { JainSymbol } from '@/components/ui/JainSymbol';
 import { generateWhatsAppLink } from '@/lib/whatsapp';
 
 /* ─── Types ──────────────────────────────────────────── */
@@ -137,8 +137,8 @@ export function ProductCatalogue() {
             />
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/50 px-4 py-2.5">
-            <span className="text-base">🌿</span>
+          <div className="flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50/80 px-4 py-2.5 shadow-xs">
+            <JainSymbol size={18} />
             <Switch
               label="Jain Options Only"
               size="sm"
@@ -194,9 +194,10 @@ export function ProductCatalogue() {
                         {product.categoryName}
                       </span>
                       {product.foodType === 'JAIN' && (
-                        <Badge variant="jain" className="text-[10px] shadow-sm py-0.5 px-2">
-                          🌿 Jain Available
-                        </Badge>
+                        <span className="inline-flex items-center gap-1 bg-amber-100/95 text-amber-950 font-bold px-2 py-0.5 rounded-full border border-amber-300 text-[10px] shadow-sm backdrop-blur">
+                          <JainSymbol size={12} />
+                          <span>Jain Available</span>
+                        </span>
                       )}
                     </div>
                   </div>

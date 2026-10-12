@@ -4,7 +4,7 @@
  */
 import type { Metadata } from 'next';
 import { ProductCatalogue } from '@/components/catalogue/ProductCatalogue';
-import { Utensils, Sparkles } from 'lucide-react';
+import { Flame } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: "Menu — Anjali's Kitchen",
@@ -26,12 +26,13 @@ export default function ProductsPage() {
         
         <div className="relative mx-auto max-w-7xl px-4 text-center space-y-4 reveal-up">
           <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-bold text-amber-300 mx-auto">
-            <Utensils className="h-3.5 w-3.5 text-amber-400" />
-            Fresh & Handcrafted
+            <Flame className="h-3.5 w-3.5 text-amber-400" />
+            <span>Fresh & Handcrafted to Order</span>
           </div>
           
-          <h1 className="text-3xl sm:text-5xl font-bold font-serif text-amber-100 tracking-tight">
-            Our <span className="text-shimmer">Complete Menu</span>
+          <h1 className="text-3xl sm:text-5xl font-bold font-serif tracking-tight">
+            <span className="text-amber-100">Our </span>
+            <span className="text-shimmer">Complete Menu</span>
           </h1>
           
           <p className="max-w-2xl mx-auto text-sm sm:text-base text-amber-50/75 leading-relaxed">

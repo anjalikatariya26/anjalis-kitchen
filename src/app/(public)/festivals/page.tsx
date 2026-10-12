@@ -6,7 +6,8 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, Gift, Calendar, ChefHat, Star, MessageCircle } from 'lucide-react';
+import { Sparkles, ArrowRight, Gift, MessageCircle } from 'lucide-react';
+import { ModakIcon, DiyaIcon, KalashIcon, RakhiIcon, SankrantiIcon } from '@/components/ui/FestivalIcons';
 
 export const metadata: Metadata = {
   title: "Festivals — Anjali's Kitchen",
@@ -20,7 +21,7 @@ const festivals = [
     description: 'Traditional Ukadiche Modak, pure cow ghee laddus, and fresh prasad boxes for Bappa.',
     img: '/images/modak.jpg',
     tag: 'Bappa Prasad Special',
-    emoji: '🪷',
+    icon: ModakIcon,
     items: ['Ukadiche Modak', 'Besan Ladoo', 'Coconut Barfi'],
     gradient: 'from-orange-600 to-red-700',
   },
@@ -30,7 +31,7 @@ const festivals = [
     description: 'Royal festive boxes with Chakli, Karanji, Besan Ladoo, Chivda, and ethnic clay diyas.',
     img: '/images/hamper.jpg',
     tag: 'Diwali Gift Hampers',
-    emoji: '🪔',
+    icon: DiyaIcon,
     items: ['Chakli', 'Karanji', 'Chivda', 'Besan Ladoo'],
     gradient: 'from-amber-600 to-orange-700',
   },
@@ -40,7 +41,7 @@ const festivals = [
     description: 'Fresh homemade sweet boxes and dry fruit laddus for sibling celebrations.',
     img: '/images/ladoo.jpg',
     tag: 'Festive Sweet Boxes',
-    emoji: '🎀',
+    icon: RakhiIcon,
     items: ['Besan Ladoo', 'Dry Fruit Roll', 'Shankarpale'],
     gradient: 'from-rose-600 to-pink-700',
   },
@@ -50,7 +51,7 @@ const festivals = [
     description: 'Farali mathri, sabudana delights, and Jain-friendly fasting snacks.',
     img: '/images/namkeen.jpg',
     tag: 'Farali & Fasting Snacks',
-    emoji: '🔱',
+    icon: KalashIcon,
     items: ['Sabudana Vada', 'Farali Chivda', 'Rajgira Ladoo'],
     gradient: 'from-purple-600 to-indigo-700',
   },
@@ -60,7 +61,7 @@ const festivals = [
     description: 'Tilgul laddus, peanut chikki, and crispy sesame jaggery brittles.',
     img: '/images/chikki.jpg',
     tag: 'Tilgul & Chikki Specials',
-    emoji: '🪁',
+    icon: SankrantiIcon,
     items: ['Tilgul Laddu', 'Peanut Chikki', 'Sesame Brittle'],
     gradient: 'from-emerald-600 to-teal-700',
   },
@@ -137,9 +138,10 @@ export default function FestivalsPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   
                   {/* Floating festival emoji — spatial foreground element */}
-                  <span className="absolute top-4 right-4 text-3xl opacity-90 group-hover:scale-125 transition-transform duration-500 drop-shadow-lg">
-                    {f.emoji}
-                  </span>
+                  {/* Festive Emblem Badge */}
+                  <div className="absolute top-3.5 right-3.5 w-11 h-11 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-300 shadow-lg flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                    <f.icon size={26} />
+                  </div>
                   
                   {/* Tag badge with gradient */}
                   <span className="absolute top-3 left-3 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 rounded-full shadow-lg">
