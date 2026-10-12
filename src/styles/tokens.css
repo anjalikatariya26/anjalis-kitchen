@@ -1,0 +1,122 @@
+/* =========================================================
+   Anjali's Kitchen — Design Tokens
+   "Festive kitchen": warm cream, deep maroon, saffron
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  /* ── Colour ── */
+  --color-bg: #FFF8EC;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #FBEFD9;
+  --color-primary: #7A1F2B;
+  --color-primary-hover: #611722;
+  --color-primary-light: #F5E6E8;
+  --color-on-primary: #FFFFFF;
+  --color-secondary: #E8890C;
+  --color-secondary-hover: #CC7608;
+  --color-accent: #2F6B3F;
+  --color-gold: #C79A3B;
+  --color-text: #2B1A12;
+  --color-muted: #6B5A50;
+  --color-border: #E9DCC4;
+  --color-border-hover: #D4C4A8;
+  --color-success: #2E7D4F;
+  --color-success-light: #E8F5EC;
+  --color-warning: #A85A00;
+  --color-warning-light: #FFF3E0;
+  --color-error: #B3261E;
+  --color-error-light: #FDECEA;
+  --color-jain: #F5B800;
+  --color-on-jain: #3B2A00;
+  --color-unavailable: #8A8178;
+  --color-unavailable-bg: #F0EDE8;
+  --color-focus: #1B4FD8;
+  --color-overlay: rgba(43, 26, 18, 0.5);
+
+  /* ── Typography ── */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-deva: 'Noto Sans Devanagari', sans-serif;
+
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: clamp(1.75rem, 1.4rem + 1.5vw, 2.25rem);
+  --text-4xl: clamp(2.25rem, 1.6rem + 3vw, 3.5rem);
+
+  --leading-tight: 1.15;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* ── Space (4-based scale) ── */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  /* ── Shape ── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  /* ── Depth ── */
+  --shadow-1: 0 1px 2px rgba(43, 26, 18, 0.08);
+  --shadow-2: 0 6px 20px rgba(43, 26, 18, 0.10);
+  --shadow-3: 0 18px 48px rgba(43, 26, 18, 0.16);
+  --shadow-inner: inset 0 1px 2px rgba(43, 26, 18, 0.06);
+
+  /* ── Motion ── */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --dur-reveal: 500ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Layout ── */
+  --content-max-width: 1280px;
+  --content-wide-max-width: 1440px;
+  --sidebar-width: 260px;
+  --navbar-height: 64px;
+  --admin-sidebar-width: 260px;
+  --admin-sidebar-collapsed: 72px;
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+    --dur-reveal: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

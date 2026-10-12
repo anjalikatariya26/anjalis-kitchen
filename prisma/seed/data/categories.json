@@ -1,0 +1,12 @@
+[
+  { "name": "Laddu", "slug": "laddu", "sortOrder": 1, "description": "Traditional round sweets in many flavours." },
+  { "name": "Chikki", "slug": "chikki", "sortOrder": 2, "description": "Crunchy brittle bars with nuts and jaggery." },
+  { "name": "Chivda", "slug": "chivda", "sortOrder": 3, "description": "Savoury flattened rice and corn mixes." },
+  { "name": "Namkeen & Farsan", "slug": "namkeen-farsan", "sortOrder": 4, "description": "Savoury snacks — chakli, shev, mathri, methi sticks and more." },
+  { "name": "Sweets", "slug": "sweets", "sortOrder": 5, "description": "Karanji, shankarpale, mohanthal and other traditional mithai." },
+  { "name": "Modak", "slug": "modak", "sortOrder": 6, "description": "Steamed and fried modak — Lord Ganesha's favourite." },
+  { "name": "Snacks & Nashta", "slug": "snacks-nashta", "sortOrder": 7, "description": "Thepla, dhokla, idli, sandwiches and everyday bites." },
+  { "name": "Chutney", "slug": "chutney", "sortOrder": 8, "description": "Fresh chutneys and accompaniments." },
+  { "name": "Cakes", "slug": "cakes", "sortOrder": 9, "description": "Bento cakes, customised cakes and standard cakes — 100% pure veg." },
+  { "name": "Cookies", "slug": "cookies", "sortOrder": 10, "description": "Homemade cookies." }
+]

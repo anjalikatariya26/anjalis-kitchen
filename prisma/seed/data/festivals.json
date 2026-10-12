@@ -1,0 +1,8 @@
+[
+  { "name": "Ganesh Chaturthi", "slug": "ganesh-chaturthi", "sortOrder": 1, "description": "Celebrate Ganeshotsav with traditional homemade modak, faral and sweets." },
+  { "name": "Raksha Bandhan", "slug": "raksha-bandhan", "sortOrder": 2, "description": "Festive sweets and namkeen for Rakhi celebrations." },
+  { "name": "Navratri", "slug": "navratri", "sortOrder": 3, "description": "Farali snacks and sweets for the nine nights of Navratri." },
+  { "name": "Diwali", "slug": "diwali", "sortOrder": 4, "description": "Complete Diwali faral — karanji, chakli, shev, laddu, chivda and more." },
+  { "name": "Makar Sankranti", "slug": "makar-sankranti", "sortOrder": 5, "description": "Til and shengdana chikki, laddu and festive treats for Sankranti." },
+  { "name": "Father's Day", "slug": "fathers-day", "sortOrder": 6, "description": "Special cakes and treats for Father's Day." }
+]

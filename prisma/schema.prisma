@@ -1,0 +1,349 @@
+// =========================================================
+// Anjali's Kitchen — Prisma Schema
+// Part E: Database Architecture
+// =========================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────────
+
+enum ProductType {
+  FESTIVE
+  REGULAR
+}
+
+enum FoodType {
+  JAIN
+  REGULAR
+}
+
+enum UnitType {
+  WEIGHT
+  PIECE
+  PACK
+  VOLUME
+  CUSTOM
+}
+
+enum StorageProvider {
+  local
+  s3
+  cloudinary
+  supabase
+}
+
+// ─── Admin & Auth ───────────────────────────────────────
+
+/// Exactly one admin user. Enforced by the create script and a unique partial index.
+model AdminUser {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email             String    @unique @db.Citext
+  passwordHash      String    @map("password_hash")
+  passwordChangedAt DateTime  @default(now()) @map("password_changed_at") @db.Timestamptz
+  failedAttempts    Int       @default(0) @map("failed_attempts")
+  lockedUntil       DateTime? @map("locked_until") @db.Timestamptz
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  sessions Session[]
+
+  @@map("admin_users")
+}
+
+/// Hashed session tokens. The cookie token's SHA-256 is stored, not the raw token.
+model Session {
+  id         String   @id @db.VarChar(128)
+  adminId    String   @map("admin_id") @db.Uuid
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz
+  lastSeenAt DateTime @default(now()) @map("last_seen_at") @db.Timestamptz
+  ip         String?  @db.VarChar(45)
+  userAgent  String?  @map("user_agent") @db.VarChar(512)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// Login attempt tracking for brute-force protection.
+model LoginAttempt {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ip        String   @db.VarChar(45)
+  email     String   @map("email_tried") @db.VarChar(255)
+  succeeded Boolean  @default(false)
+  at        DateTime @default(now()) @db.Timestamptz
+
+  @@index([ip, at])
+  @@index([email, at])
+  @@map("login_attempts")
+}
+
+// ─── Taxonomy ───────────────────────────────────────────
+
+/// Dynamic food categories — flat list for the MVP.
+model Category {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(60)
+  nameKey     String   @unique @map("name_key") @db.VarChar(60)
+  slug        String   @unique @db.VarChar(80)
+  description String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  products Product[]
+
+  @@index([isActive, sortOrder])
+  @@map("categories")
+}
+
+/// Festivals — seasonal events that group festive products and hampers.
+model Festival {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String    @db.VarChar(60)
+  nameKey        String    @unique @map("name_key") @db.VarChar(60)
+  slug           String    @unique @db.VarChar(80)
+  description    String?   @db.Text
+  isActive       Boolean   @default(true) @map("is_active")
+  sortOrder      Int       @default(0) @map("sort_order")
+  seoTitle       String?   @map("seo_title") @db.VarChar(120)
+  seoDescription String?   @map("seo_description") @db.VarChar(300)
+  startsOn       DateTime? @map("starts_on") @db.Date
+  endsOn         DateTime? @map("ends_on") @db.Date
+  bannerMediaId  String?   @map("banner_media_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  bannerMedia     MediaAsset?      @relation(fields: [bannerMediaId], references: [id])
+  productFestivals ProductFestival[]
+  hampers         Hamper[]
+
+  @@index([isActive, sortOrder])
+  @@map("festivals")
+}
+
+// ─── Products ───────────────────────────────────────────
+
+/// A sellable item in the catalogue with one or more variants.
+model Product {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String      @db.VarChar(120)
+  nameKey          String      @map("name_key") @db.VarChar(120)
+  slug             String      @unique @db.VarChar(140)
+  shortDescription String?     @map("short_description") @db.VarChar(160)
+  description      String      @db.Text
+  productType      ProductType @map("product_type")
+  foodType         FoodType    @map("food_type")
+  categoryId       String      @map("category_id") @db.Uuid
+  isAvailable      Boolean     @default(true) @map("is_available")
+  isFeatured       Boolean     @default(false) @map("is_featured")
+  priceFromPaise   Int?        @map("price_from_paise")
+  searchText       String      @default("") @map("search_text") @db.Text
+  version          Int         @default(1)
+  deletedAt        DateTime?   @map("deleted_at") @db.Timestamptz
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  category   Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  variants   ProductVariant[]
+  images     ProductImage[]
+  festivals  ProductFestival[]
+
+  // Unique name_key per food_type among non-deleted products
+  // Enforced via a partial unique index in raw SQL migration
+  @@index([deletedAt, isAvailable, productType, foodType])
+  @@index([categoryId])
+  @@index([updatedAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("products")
+}
+
+/// Product ↔ Festival many-to-many join.
+model ProductFestival {
+  productId  String @map("product_id") @db.Uuid
+  festivalId String @map("festival_id") @db.Uuid
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  festival Festival @relation(fields: [festivalId], references: [id], onDelete: Restrict)
+
+  hamperItems HamperItem[]
+
+  @@id([productId, festivalId])
+  @@index([festivalId])
+  @@map("product_festivals")
+}
+
+/// A selling option for a product (e.g. "250 g", "500 g", "1 kg").
+model ProductVariant {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId           String   @map("product_id") @db.Uuid
+  unitType            UnitType @map("unit_type")
+  unit                String   @db.VarChar(12)
+  quantityValue       Decimal  @map("quantity_value") @db.Decimal(10, 3)
+  displayLabel        String   @map("display_label") @db.VarChar(40)
+  pricePaise          Int?     @map("price_paise")
+  compareAtPricePaise Int?     @map("compare_at_price_paise")
+  sku                 String?  @db.VarChar(40)
+  isAvailable         Boolean  @default(true) @map("is_available")
+  sortOrder           Int      @default(0) @map("sort_order")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  hamperItems HamperItem[]
+
+  // Unique (product_id, unit, quantity_value)
+  // Enforced via constraint in raw SQL migration
+  @@unique([id, productId]) // For composite FK from hamper_items
+  @@index([productId])
+  @@map("product_variants")
+}
+
+// ─── Media ──────────────────────────────────────────────
+
+/// A stored file (image). Only table that knows about storage providers.
+model MediaAsset {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storageKey    String          @unique @map("storage_key")
+  provider      StorageProvider
+  mimeType      String          @map("mime_type") @db.VarChar(50)
+  bytes         Int
+  width         Int
+  height        Int
+  sha256        String?         @db.VarChar(64)
+  blurDataUrl   String?         @map("blur_data_url") @db.Text
+  altText       String?         @map("alt_text") @db.VarChar(200)
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz
+
+  productImages ProductImage[]
+  hamperImages  HamperImage[]
+  festivals     Festival[]
+
+  @@map("media_assets")
+}
+
+/// Ordered images for a product (max 2, enforced by CHECK and UNIQUE).
+model ProductImage {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId String @map("product_id") @db.Uuid
+  mediaId   String @map("media_id") @db.Uuid
+  position  Int    @db.SmallInt
+
+  product Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  media   MediaAsset @relation(fields: [mediaId], references: [id])
+
+  @@unique([productId, position])
+  @@map("product_images")
+}
+
+/// Ordered images for a hamper (max 2).
+model HamperImage {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hamperId String @map("hamper_id") @db.Uuid
+  mediaId  String @map("media_id") @db.Uuid
+  position Int    @db.SmallInt
+
+  hamper Hamper     @relation(fields: [hamperId], references: [id], onDelete: Cascade)
+  media  MediaAsset @relation(fields: [mediaId], references: [id])
+
+  @@unique([hamperId, position])
+  @@map("hamper_images")
+}
+
+// ─── Hampers ────────────────────────────────────────────
+
+/// A festival-scoped product bundle with its own price.
+model Hamper {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  festivalId  String    @map("festival_id") @db.Uuid
+  name        String    @db.VarChar(120)
+  slug        String    @unique @db.VarChar(140)
+  description String?   @db.Text
+  pricePaise  Int       @map("price_paise")
+  isAvailable Boolean   @default(true) @map("is_available")
+  sortOrder   Int       @default(0) @map("sort_order")
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  festival Festival     @relation(fields: [festivalId], references: [id], onDelete: Restrict)
+  items    HamperItem[]
+  images   HamperImage[]
+
+  @@unique([id, festivalId]) // For composite FK from hamper_items
+  @@index([festivalId])
+  @@map("hampers")
+}
+
+/// An item in a hamper — references a specific product variant.
+/// Composite FKs ensure the product belongs to the hamper's festival.
+model HamperItem {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hamperId   String @map("hamper_id") @db.Uuid
+  festivalId String @map("festival_id") @db.Uuid
+  productId  String @map("product_id") @db.Uuid
+  variantId  String @map("variant_id") @db.Uuid
+  quantity   Int    @default(1) @db.SmallInt
+  position   Int    @default(0) @db.SmallInt
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Composite FK: (hamper_id, festival_id) → hampers (id, festival_id)
+  hamper Hamper @relation(fields: [hamperId, festivalId], references: [id, festivalId])
+
+  // Composite FK: (product_id, festival_id) → product_festivals (product_id, festival_id)
+  // This ensures the product belongs to the hamper's festival
+  productFestival ProductFestival @relation(fields: [productId, festivalId], references: [productId, festivalId])
+
+  // Composite FK: (variant_id, product_id) → product_variants (id, product_id)
+  variant ProductVariant @relation(fields: [variantId, productId], references: [id, productId])
+
+  @@unique([hamperId, variantId])
+  @@index([hamperId])
+  @@map("hamper_items")
+}
+
+// ─── Business Profile ───────────────────────────────────
+
+/// Single row with business contact and branding information.
+model BusinessProfile {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  displayName   String   @default("Anjali's Kitchen") @map("display_name") @db.VarChar(100)
+  tagline       String   @default("Ghar Ka Swaad") @db.VarChar(200)
+  phone         String   @default("9970599900") @db.VarChar(20)
+  whatsappNumber String  @default("919970599900") @map("whatsapp_number") @db.VarChar(20)
+  addressLine1  String   @default("") @map("address_line_1") @db.VarChar(200)
+  addressLine2  String?  @map("address_line_2") @db.VarChar(200)
+  city          String   @default("Ahilyanagar") @db.VarChar(100)
+  mapUrl        String?  @map("map_url") @db.VarChar(500)
+  hours         Json?    @db.JsonB
+  instagramUrl  String?  @map("instagram_url") @db.VarChar(200)
+  fssaiNumber   String?  @map("fssai_number") @db.VarChar(20)
+  leadTimeText  String   @default("Please order 3–4 days before") @map("lead_time_text") @db.VarChar(200)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("business_profile")
+}
+
+// ─── Slug Redirects ─────────────────────────────────────
+
+/// Keeps shared links alive after a product/hamper/festival/category rename.
+model SlugRedirect {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  oldSlug    String   @map("old_slug") @db.VarChar(140)
+  entityType String   @map("entity_type") @db.VarChar(20)
+  entityId   String   @map("entity_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([oldSlug, entityType])
+  @@map("slug_redirects")
+}
