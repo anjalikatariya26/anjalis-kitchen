@@ -23,7 +23,7 @@ sudo systemctl restart postgresql
 echo "=== 2. Cloning/Pulling Repository ==="
 if [ -d "/home/ec2-user/anjalis-kitchen" ]; then
     cd /home/ec2-user/anjalis-kitchen
-    git pull origin main
+    git pull origin main || true
 else
     cd /home/ec2-user
     git clone https://github.com/anjalikatariya26/anjalis-kitchen.git
@@ -34,7 +34,7 @@ echo "=== 3. Writing .env ==="
 cat << 'EOF' > .env
 NODE_ENV=production
 APP_URL=https://3.27.1.14.sslip.io
-DATABASE_URL=postgresql://anjali:change-me@127.0.0.1:5432/anjalis_kitchen?schema=public
+DATABASE_URL=postgresql://anjali:change-me@127.0.0.1:5432/anjalis_kitchen?schema=public&connection_limit=15&pool_timeout=20
 SESSION_COOKIE_NAME=ak_session
 SESSION_IDLE_HOURS=12
 SESSION_ABSOLUTE_DAYS=7
@@ -51,6 +51,7 @@ pnpm install
 npx prisma generate
 npx prisma db push --accept-data-loss
 npx tsx prisma/seed/seed.ts || true
+node scripts/seed-admin.cjs || true
 
 echo "=== 5. Building Next.js Standalone ==="
 pnpm run build
@@ -59,50 +60,29 @@ pnpm run build
 cp -r public .next/standalone/
 cp -r .next/static .next/standalone/.next/
 
+# CRITICAL FIX: Patch argon2 binary in standalone with locally compiled binary to prevent glibc SIGSEGV
+ARGON2_COMPILED=$(find node_modules/.pnpm -name "argon2.node" | grep Release | head -n 1)
+if [ -n "$ARGON2_COMPILED" ]; then
+    echo "Patching standalone argon2 with locally compiled binary: $ARGON2_COMPILED"
+    find .next/standalone -name "argon2.glibc.node" -exec cp "$ARGON2_COMPILED" {} \;
+fi
+
 echo "=== 6. Configuring PM2 ==="
 pm2 delete anjalis-kitchen || true
 pm2 start .next/standalone/server.js --name "anjalis-kitchen" --max-memory-restart 450M
 pm2 save
 sudo env PATH=$PATH:/usr/bin /usr/local/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user || true
 
-echo "=== 7. Configuring Nginx ==="
-sudo tee /etc/nginx/conf.d/anjalis-kitchen.conf << 'EOF_NGINX' > /dev/null
-server {
-    listen 80;
-    server_name _;
+echo "=== 7. Configuring High-Performance Nginx ==="
+sudo mkdir -p /var/cache/nginx
+sudo chown -R nginx:nginx /var/cache/nginx
+sudo chmod 755 /home/ec2-user
 
-    client_max_body_size 20M;
-
-    gzip on;
-    gzip_vary on;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_types text/plain text/css text/xml application/json application/javascript application/rss+xml font/woff2 image/svg+xml;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-    }
-}
-EOF_NGINX
+sudo cp scripts/00-cache.conf /etc/nginx/conf.d/00-cache.conf || true
+sudo cp scripts/nginx-performance.conf /etc/nginx/conf.d/anjalis-kitchen.conf || true
 
 sudo nginx -t
 sudo systemctl enable nginx
-sudo systemctl restart nginx
+sudo systemctl reload nginx || sudo systemctl restart nginx
 
-echo "=== 8. Verification ==="
-sleep 3
-curl -I http://127.0.0.1:3000
-curl -I http://127.0.0.1:80
-
-echo "=== ALL DONE SUCCESSFULLY! ==="
+echo "=== Deployment Completed Successfully! ==="

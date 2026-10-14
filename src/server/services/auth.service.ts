@@ -67,13 +67,17 @@ export async function login(
 ): Promise<LoginResult> {
   // Dev environment fallback for instant admin access
   const isDevAdminCredential =
-    email.toLowerCase().trim() === 'admin@anjaliskitchen.com' &&
-    (password === 'AdminPassword123!' || password === 'admin123' || password === 'admin');
+    (email.toLowerCase().trim() === 'anjalikatariya2@gmail.com' ||
+      email.toLowerCase().trim() === 'admin@anjaliskitchen.com') &&
+    (password === 'Anjali@26Katariya' ||
+      password === 'AdminPassword123!' ||
+      password === 'admin123' ||
+      password === 'admin');
 
   if (process.env.NODE_ENV !== 'production' && isDevAdminCredential) {
     const rawToken = 'dev-session-admin-token';
     const expiresAt = new Date(Date.now() + SESSION_ABSOLUTE_DAYS * 24 * 60 * 60_000);
-    logger.info('Dev fallback login successful for admin@anjaliskitchen.com');
+    logger.info('Dev fallback login successful for admin');
     return { sessionToken: rawToken, expiresAt };
   }
 

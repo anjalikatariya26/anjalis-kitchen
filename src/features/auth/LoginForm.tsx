@@ -15,12 +15,12 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
     null
   );
 
-  const [emailVal, setEmailVal] = useState('admin@anjaliskitchen.com');
-  const [passwordVal, setPasswordVal] = useState('AdminPassword123!');
+  const [emailVal, setEmailVal] = useState('anjalikatariya2@gmail.com');
+  const [passwordVal, setPasswordVal] = useState('Anjali@26Katariya');
 
   const fillDefaultCredentials = () => {
-    setEmailVal('admin@anjaliskitchen.com');
-    setPasswordVal('AdminPassword123!');
+    setEmailVal('anjalikatariya2@gmail.com');
+    setPasswordVal('Anjali@26Katariya');
   };
 
   return (
@@ -41,8 +41,8 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           </button>
         </div>
         <div className="text-xs text-slate-700 font-mono space-y-0.5 pt-1">
-          <div><span className="text-slate-500">Email:</span> admin@anjaliskitchen.com</div>
-          <div><span className="text-slate-500">Pass:</span> AdminPassword123!</div>
+          <div><span className="text-slate-500">Email:</span> anjalikatariya2@gmail.com</div>
+          <div><span className="text-slate-500">Pass:</span> Anjali@26Katariya</div>
         </div>
       </div>
 
@@ -76,7 +76,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
               value={emailVal}
               onChange={(e) => setEmailVal(e.target.value)}
               className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-3 text-sm focus:border-maroon-700 focus:ring-2 focus:ring-maroon-700/20 outline-none transition-all disabled:opacity-50 bg-white text-slate-900"
-              placeholder="admin@anjaliskitchen.com"
+              placeholder="anjalikatariya2@gmail.com"
             />
           </div>
           {state?.fieldErrors?.email && (
