@@ -78,8 +78,17 @@ export function formatPhone(phoneNumber: string): string {
   return `+${cleaned}`;
 }
 
-export function generateWhatsAppLink({ text, phoneNumber = '919876543210' }: { text: string; phoneNumber?: string }): string {
-  return `https://wa.me/${phoneNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent(text)}`;
+export const DEFAULT_STORE_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919970599900';
+
+export function generateWhatsAppLink({
+  text,
+  phoneNumber = DEFAULT_STORE_PHONE,
+}: {
+  text: string;
+  phoneNumber?: string;
+}): string {
+  const cleanPhone = (phoneNumber || DEFAULT_STORE_PHONE).replace(/[^\d]/g, '');
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
 }
 
 export function generateProductOrderLink({
@@ -87,7 +96,7 @@ export function generateProductOrderLink({
   variantLabel,
   quantity,
   totalPricePaise,
-  phoneNumber = '919876543210',
+  phoneNumber = DEFAULT_STORE_PHONE,
 }: {
   productName: string;
   variantLabel?: string;
@@ -97,7 +106,7 @@ export function generateProductOrderLink({
 }): string {
   const priceRupees = (totalPricePaise / 100).toFixed(2).replace(/\.00$/, '');
   const sizeStr = variantLabel ? ` (${variantLabel})` : '';
-  const message = `Hello Anjali's Kitchen! I would like to order:\n- ${productName}${sizeStr} x ${quantity}\n- Total Price: ₹${priceRupees}\n\nPlease confirm availability and payment details.`;
+  const message = `Hello Anjali's Kitchen! I would like to place an order enquiry:\n- Item: ${productName}${sizeStr}\n- Quantity: ${quantity}\n- Est. Total: ₹${priceRupees}\n\nPlease confirm product availability, earliest delivery/pickup slot, and final details.`;
   return generateWhatsAppLink({ text: message, phoneNumber });
 }
 

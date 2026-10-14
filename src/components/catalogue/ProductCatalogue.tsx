@@ -1,22 +1,23 @@
 'use client';
 
 /**
- * ProductCatalogue — Public product browsing with rich mock fallbacks.
- * Category chips, Jain toggle, search, responsive product grid, 3D AI renders.
+ * ProductCatalogue — Public product browsing with database data and fallback.
+ * Category chips, Jain toggle, search, responsive product grid.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Search, MessageCircle } from 'lucide-react';
 import { JainSymbol } from '@/components/ui/JainSymbol';
-import { generateWhatsAppLink } from '@/lib/whatsapp';
+import { generateWhatsAppLink, DEFAULT_STORE_PHONE } from '@/lib/whatsapp';
 
 /* ─── Types ──────────────────────────────────────────── */
 
-interface PublicProduct {
+export interface PublicProduct {
   id: string;
   name: string;
   slug: string;
@@ -27,6 +28,13 @@ interface PublicProduct {
   isAvailable: boolean;
   priceLabel: string;
   imageUrl: string | null;
+}
+
+export interface PublicCategory {
+  id?: string;
+  name: string;
+  slug: string;
+  description?: string | null;
 }
 
 /* ─── Initial Showcase Products ──────────────────────── */
@@ -78,7 +86,7 @@ const showcaseProducts: PublicProduct[] = [
     categoryName: 'Chivda',
     isAvailable: true,
     priceLabel: '₹180 / 500g',
-    imageUrl: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&auto=format&fit=crop&q=80',
+    imageUrl: '/images/modak.jpg',
   },
   {
     id: 'p5',
@@ -90,13 +98,11 @@ const showcaseProducts: PublicProduct[] = [
     categoryName: 'Namkeen',
     isAvailable: true,
     priceLabel: '₹220 / 500g',
-    imageUrl: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=600&auto=format&fit=crop&q=80',
+    imageUrl: '/images/ladoo.jpg',
   },
 ];
 
-/* ─── Category list ──────────────────────────────────── */
-
-const categories = [
+const defaultCategories: PublicCategory[] = [
   { name: 'All', slug: '' },
   { name: 'Laddu', slug: 'laddu' },
   { name: 'Modak', slug: 'modak' },
@@ -107,20 +113,44 @@ const categories = [
   { name: 'Snacks', slug: 'snacks-nashta' },
 ];
 
-export function ProductCatalogue() {
-  const [products] = useState<PublicProduct[]>(showcaseProducts);
+export interface ProductCatalogueProps {
+  initialProducts?: PublicProduct[];
+  initialCategories?: PublicCategory[];
+}
+
+function ProductCatalogueContent({
+  initialProducts,
+  initialCategories,
+}: ProductCatalogueProps) {
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get('category') || '';
+
+  const [products] = useState<PublicProduct[]>(
+    initialProducts && initialProducts.length > 0 ? initialProducts : showcaseProducts
+  );
+
+  const categories = useMemo(() => {
+    if (initialCategories && initialCategories.length > 0) {
+      return [{ name: 'All', slug: '' }, ...initialCategories];
+    }
+    return defaultCategories;
+  }, [initialCategories]);
+
   const [query, setQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [userSelectedCategory, setUserSelectedCategory] = useState<string | null>(null);
   const [jainOnly, setJainOnly] = useState(false);
+
+  // Derive active category from user selection or URL parameter
+  const activeCategory = userSelectedCategory !== null ? userSelectedCategory : categoryFromUrl;
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
       if (query && !p.name.toLowerCase().includes(query.toLowerCase())) return false;
-      if (selectedCategory && p.categorySlug !== selectedCategory) return false;
+      if (activeCategory && p.categorySlug !== activeCategory) return false;
       if (jainOnly && p.foodType !== 'JAIN') return false;
       return true;
     });
-  }, [products, query, selectedCategory, jainOnly]);
+  }, [products, query, activeCategory, jainOnly]);
 
   return (
     <div className="space-y-8">
@@ -149,13 +179,15 @@ export function ProductCatalogue() {
         </div>
 
         {/* Category chips */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" aria-label="Filter menu by category">
           {categories.map((cat) => {
-            const isSelected = selectedCategory === cat.slug;
+            const isSelected = activeCategory === cat.slug;
             return (
               <button
                 key={cat.slug}
-                onClick={() => setSelectedCategory(cat.slug)}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => setUserSelectedCategory(cat.slug)}
                 className={`flex-shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
                   isSelected
                     ? 'bg-maroon-800 text-white shadow-md scale-105'
@@ -173,9 +205,16 @@ export function ProductCatalogue() {
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((product) => {
-            const whatsappOrderUrl = generateWhatsAppLink({
-              text: `Hello Anjali's Kitchen! I would like to order ${product.name} (${product.priceLabel}).`,
-            });
+            const isAvailable = product.isAvailable !== false;
+            const whatsappOrderUrl = isAvailable
+              ? generateWhatsAppLink({
+                  text: `Hello Anjali's Kitchen! I would like to place an order enquiry for ${product.name} (${product.priceLabel}). Please confirm availability.`,
+                  phoneNumber: DEFAULT_STORE_PHONE,
+                })
+              : generateWhatsAppLink({
+                  text: `Hello Anjali's Kitchen! Please let me know when ${product.name} is available next.`,
+                  phoneNumber: DEFAULT_STORE_PHONE,
+                });
 
             return (
               <Card
@@ -185,7 +224,7 @@ export function ProductCatalogue() {
                 <div>
                   <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
                     <img
-                      src={product.imageUrl || 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=600&auto=format&fit=crop&q=80'}
+                      src={product.imageUrl || '/images/modak.jpg'}
                       alt={product.name}
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -197,6 +236,11 @@ export function ProductCatalogue() {
                         <span className="inline-flex items-center gap-1 bg-amber-100/95 text-amber-950 font-bold px-2 py-0.5 rounded-full border border-amber-300 text-[10px] shadow-sm backdrop-blur">
                           <JainSymbol size={12} />
                           <span>Jain Available</span>
+                        </span>
+                      )}
+                      {!isAvailable && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-200/95 px-2.5 py-1 rounded-full border border-amber-400 shadow-sm backdrop-blur">
+                          Currently Unavailable
                         </span>
                       )}
                     </div>
@@ -233,10 +277,12 @@ export function ProductCatalogue() {
                       href={whatsappOrderUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn btn-whatsapp btn-sm text-xs font-bold flex items-center gap-1 py-2 px-3"
+                      className={`btn btn-sm text-xs font-bold flex items-center gap-1 py-2 px-3 ${
+                        isAvailable ? 'btn-whatsapp' : 'btn-secondary'
+                      }`}
                     >
                       <MessageCircle className="h-3.5 w-3.5 fill-current" />
-                      Order
+                      {isAvailable ? 'Enquire' : 'Check Stock'}
                     </a>
                   </div>
                 </div>
@@ -250,7 +296,7 @@ export function ProductCatalogue() {
           <button
             onClick={() => {
               setQuery('');
-              setSelectedCategory('');
+              setUserSelectedCategory('');
               setJainOnly(false);
             }}
             className="mt-3 text-xs font-bold text-maroon-700 underline"
@@ -260,5 +306,19 @@ export function ProductCatalogue() {
         </div>
       )}
     </div>
+  );
+}
+
+export function ProductCatalogue(props: ProductCatalogueProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-12 text-center text-slate-500">
+          Loading menu catalogue...
+        </div>
+      }
+    >
+      <ProductCatalogueContent {...props} />
+    </Suspense>
   );
 }

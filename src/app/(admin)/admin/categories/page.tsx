@@ -1,12 +1,18 @@
-/**
- * Admin Categories page — List, create, edit, deactivate categories.
- * Phase 6: Category management with duplicate prevention (name_key).
- */
 import { requireAuth } from '@/features/auth/actions';
 import { CategoryManager } from '@/features/categories/CategoryManager';
+import { prisma } from '@/server/db';
 
 export default async function AdminCategoriesPage() {
   await requireAuth();
+
+  const categories = await prisma.category.findMany({
+    orderBy: { sortOrder: 'asc' },
+    include: {
+      _count: {
+        select: { products: { where: { deletedAt: null } } },
+      },
+    },
+  });
 
   return (
     <div>
@@ -18,7 +24,7 @@ export default async function AdminCategoriesPage() {
       </div>
 
       <div className="mt-6">
-        <CategoryManager />
+        <CategoryManager initialCategories={categories} />
       </div>
     </div>
   );

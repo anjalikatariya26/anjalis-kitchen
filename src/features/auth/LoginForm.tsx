@@ -51,7 +51,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
               value={emailVal}
               onChange={(e) => setEmailVal(e.target.value)}
               className="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-3 text-sm focus:border-maroon-700 focus:ring-2 focus:ring-maroon-700/20 outline-none transition-all disabled:opacity-50 bg-white text-slate-900"
-              placeholder="anjalikatariya2@gmail.com"
+              placeholder="admin@example.com"
             />
           </div>
           {state?.fieldErrors?.email && (

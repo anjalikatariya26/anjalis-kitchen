@@ -3,6 +3,7 @@
  */
 import type { StorageProvider } from './StorageProvider';
 import { LocalStorageDriver } from './local.driver';
+import { S3StorageDriver } from './s3.driver';
 
 let instance: StorageProvider | null = null;
 
@@ -20,8 +21,15 @@ export function getStorage(): StorageProvider {
       break;
 
     case 's3':
-      // Future: import and instantiate S3StorageDriver
-      throw new Error('S3 storage driver not yet implemented');
+      instance = new S3StorageDriver({
+        bucket: process.env.AWS_S3_BUCKET || 'anjalis-kitchen-uploads',
+        region: process.env.AWS_REGION || 'ap-southeast-2',
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+        endpoint: process.env.AWS_S3_ENDPOINT,
+        publicBaseUrl: process.env.AWS_S3_PUBLIC_BASE_URL,
+      });
+      break;
 
     case 'cloudinary':
       throw new Error('Cloudinary storage driver not yet implemented');

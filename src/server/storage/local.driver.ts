@@ -18,19 +18,32 @@ export class LocalStorageDriver implements StorageProvider {
     this.publicBaseUrl = publicBaseUrl.replace(/\/$/, '');
   }
 
+  private resolveSafePath(key: string): string {
+    // Disallow null bytes and ensure key is a clean relative path
+    if (key.includes('\0') || path.isAbsolute(key)) {
+      throw new Error('Invalid storage key');
+    }
+    const resolvedPath = path.resolve(this.baseDir, key);
+    // Ensure the resolved path stays within baseDir
+    if (!resolvedPath.startsWith(this.baseDir + path.sep) && resolvedPath !== this.baseDir) {
+      throw new Error('Path traversal detected');
+    }
+    return resolvedPath;
+  }
+
   async put(
     key: string,
     body: Buffer,
     _opts: { contentType: string; cacheControl: string }
   ): Promise<void> {
-    const filePath = path.join(this.baseDir, key);
+    const filePath = this.resolveSafePath(key);
     const dir = path.dirname(filePath);
     await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(filePath, body);
   }
 
   async delete(key: string): Promise<void> {
-    const filePath = path.join(this.baseDir, key);
+    const filePath = this.resolveSafePath(key);
     try {
       await fs.unlink(filePath);
     } catch (err) {
@@ -42,12 +55,13 @@ export class LocalStorageDriver implements StorageProvider {
   }
 
   publicUrl(key: string): string {
-    return `${this.publicBaseUrl}/${key}`;
+    const cleanKey = key.replace(/^\/+/, '');
+    return `${this.publicBaseUrl}/${cleanKey}`;
   }
 
   async exists(key: string): Promise<boolean> {
-    const filePath = path.join(this.baseDir, key);
     try {
+      const filePath = this.resolveSafePath(key);
       await fs.access(filePath);
       return true;
     } catch {

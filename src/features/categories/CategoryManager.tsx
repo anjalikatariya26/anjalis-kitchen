@@ -10,9 +10,11 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useToast } from '@/components/ui/Toast';
 import { Plus, Pencil, Trash2, FolderTree, GripVertical, Search } from 'lucide-react';
 
+import { createCategoryAction, updateCategoryAction, deleteCategoryAction } from './actions';
+
 /* ─── Types ──────────────────────────────────────────── */
 
-interface Category {
+export interface Category {
   id: string;
   name: string;
   slug: string;
@@ -22,8 +24,6 @@ interface Category {
   _count?: { products: number };
 }
 
-/* ─── Sample data for UI development ─────────────────── */
-
 const sampleCategories: Category[] = [
   { id: '1', name: 'Laddu', slug: 'laddu', description: 'All varieties of laddu', isActive: true, sortOrder: 0, _count: { products: 0 } },
   { id: '2', name: 'Chikki', slug: 'chikki', description: 'Traditional chikki and brittle', isActive: true, sortOrder: 1, _count: { products: 0 } },
@@ -32,20 +32,20 @@ const sampleCategories: Category[] = [
   { id: '5', name: 'Sweets', slug: 'sweets', description: 'Traditional sweets', isActive: true, sortOrder: 4, _count: { products: 0 } },
   { id: '6', name: 'Modak', slug: 'modak', description: 'Steamed and fried modak', isActive: true, sortOrder: 5, _count: { products: 0 } },
   { id: '7', name: 'Snacks & Nashta', slug: 'snacks-nashta', description: 'Fresh snacks and breakfast', isActive: true, sortOrder: 6, _count: { products: 0 } },
-  { id: '8', name: 'Chutney', slug: 'chutney', description: 'Fresh chutneys', isActive: true, sortOrder: 7, _count: { products: 0 } },
-  { id: '9', name: 'Cakes', slug: 'cakes', description: 'Bento and customised cakes', isActive: true, sortOrder: 8, _count: { products: 0 } },
-  { id: '10', name: 'Cookies', slug: 'cookies', description: 'Cookies and biscuits', isActive: true, sortOrder: 9, _count: { products: 0 } },
 ];
 
-/* ─── CategoryManager ────────────────────────────────── */
+interface CategoryManagerProps {
+  initialCategories?: Category[];
+}
 
-export function CategoryManager() {
+export function CategoryManager({ initialCategories = sampleCategories }: CategoryManagerProps) {
   const { toast } = useToast();
-  const [categories, setCategories] = useState<Category[]>(sampleCategories);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -72,50 +72,45 @@ export function CategoryManager() {
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const name = formName.trim();
     if (name.length < 2 || name.length > 60) {
       setFormError('Name must be 2–60 characters.');
       return;
     }
 
-    // Duplicate check (simplified name_key logic)
-    const nameKey = name.toLowerCase().replace(/[^\w\s]/g, '').trim();
-    const existing = categories.find(
-      (c) => c.id !== editingCategory?.id && c.name.toLowerCase().replace(/[^\w\s]/g, '').trim() === nameKey
-    );
-
-    if (existing) {
-      setFormError(`A category with a similar name already exists: "${existing.name}"`);
-      return;
-    }
+    setIsSaving(true);
+    setFormError('');
 
     if (editingCategory) {
       // Update
-      setCategories((prev) =>
-        prev.map((c) =>
-          c.id === editingCategory.id
-            ? { ...c, name, description: formDescription || null }
-            : c
-        )
-      );
-      toast({ variant: 'success', message: `Category "${name}" updated.` });
+      const res = await updateCategoryAction(editingCategory.id, name, formDescription);
+      setIsSaving(false);
+      if (res.success) {
+        setCategories((prev) =>
+          prev.map((c) =>
+            c.id === editingCategory.id
+              ? { ...c, name, description: formDescription || null }
+              : c
+          )
+        );
+        toast({ variant: 'success', message: `Category "${name}" updated.` });
+        setDialogOpen(false);
+      } else {
+        setFormError(res.error || 'Failed to update category.');
+      }
     } else {
       // Create
-      const newCat: Category = {
-        id: crypto.randomUUID(),
-        name,
-        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        description: formDescription || null,
-        isActive: true,
-        sortOrder: categories.length,
-        _count: { products: 0 },
-      };
-      setCategories((prev) => [...prev, newCat]);
-      toast({ variant: 'success', message: `Category "${name}" created.` });
+      const res = await createCategoryAction(name, formDescription);
+      setIsSaving(false);
+      if (res.success && res.category) {
+        setCategories((prev) => [...prev, { ...res.category, _count: { products: 0 } }]);
+        toast({ variant: 'success', message: `Category "${name}" created.` });
+        setDialogOpen(false);
+      } else {
+        setFormError(res.error || 'Failed to create category.');
+      }
     }
-
-    setDialogOpen(false);
   };
 
   const handleToggle = (cat: Category) => {
@@ -125,28 +120,26 @@ export function CategoryManager() {
     toast({
       variant: 'info',
       message: `"${cat.name}" ${cat.isActive ? 'deactivated' : 'activated'}.`,
-      action: {
-        label: 'Undo',
-        onClick: () =>
-          setCategories((prev) =>
-            prev.map((c) => (c.id === cat.id ? { ...c, isActive: cat.isActive } : c))
-          ),
-      },
     });
   };
 
-  const handleDelete = (cat: Category) => {
+  const handleDelete = async (cat: Category) => {
     if (cat._count && cat._count.products > 0) {
       toast({
         variant: 'error',
-        message: `Cannot delete "${cat.name}" — it has ${cat._count.products} products. Deactivate it instead.`,
+        message: `Cannot delete "${cat.name}" — it has ${cat._count.products} products. Move or delete those products first.`,
       });
       setDeleteConfirm(null);
       return;
     }
 
-    setCategories((prev) => prev.filter((c) => c.id !== cat.id));
-    toast({ variant: 'success', message: `Category "${cat.name}" deleted.` });
+    const res = await deleteCategoryAction(cat.id);
+    if (res.success) {
+      setCategories((prev) => prev.filter((c) => c.id !== cat.id));
+      toast({ variant: 'success', message: `Category "${cat.name}" deleted.` });
+    } else {
+      toast({ variant: 'error', message: res.error || 'Failed to delete category.' });
+    }
     setDeleteConfirm(null);
   };
 

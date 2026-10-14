@@ -72,7 +72,11 @@ export async function loginAction(
   }
 
   // Redirect outside try/catch (Next.js redirect throws)
-  const redirectTo = formData.get('redirect')?.toString() || '/admin';
+  const rawRedirect = formData.get('redirect')?.toString();
+  let redirectTo = '/admin';
+  if (rawRedirect && rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') && !rawRedirect.startsWith('/\\')) {
+    redirectTo = rawRedirect;
+  }
   redirect(redirectTo);
 }
 

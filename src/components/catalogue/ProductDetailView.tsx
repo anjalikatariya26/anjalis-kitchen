@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { formatMoney } from '@/lib/money';
-import { generateProductOrderLink } from '@/lib/whatsapp';
+import { generateProductOrderLink, DEFAULT_STORE_PHONE } from '@/lib/whatsapp';
 import { JainSymbol } from '@/components/ui/JainSymbol';
 import {
   MessageCircle,
@@ -39,6 +39,7 @@ interface ProductDetailProps {
     categoryName: string;
     categorySlug: string;
     isJain: boolean;
+    isAvailable?: boolean;
     shelfLifeDays: number | null;
     leadTimeHours: number;
     images: string[];
@@ -53,6 +54,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
   const [copied, setCopied] = useState(false);
 
   const selectedVariant = product.variants[selectedVariantIndex] || product.variants[0];
+  const isItemAvailable = product.isAvailable !== false && (!selectedVariant || selectedVariant.isAvailable !== false);
   const unitPricePaise = selectedVariant ? selectedVariant.pricePaise : 0;
   const totalPricePaise = unitPricePaise * quantity;
 
@@ -63,7 +65,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
         variantLabel: selectedVariant.label,
         quantity,
         totalPricePaise,
-        phoneNumber: '919876543210', // Default store number
+        phoneNumber: DEFAULT_STORE_PHONE,
       })
     : '#';
 
@@ -245,25 +247,41 @@ export function ProductDetailView({ product }: ProductDetailProps) {
             </div>
 
             {/* WhatsApp Order CTA Box */}
-            <Card className="mt-6 border-emerald-200 bg-emerald-50/50 shadow-sm">
+            <Card className={`mt-6 shadow-sm ${isItemAvailable ? 'border-emerald-200 bg-emerald-50/50' : 'border-amber-200 bg-amber-50/50'}`}>
               <CardContent className="p-5 space-y-3">
-                <div className="flex items-center justify-between text-xs text-emerald-800 font-medium">
-                  <span>Order directly via WhatsApp</span>
-                  <span>Instant Confirmation</span>
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <span className={isItemAvailable ? 'text-emerald-800' : 'text-amber-800'}>
+                    {isItemAvailable ? 'Direct Order Request via WhatsApp' : 'Currently Unavailable'}
+                  </span>
+                  <span className="text-slate-500">Made Fresh to Order</span>
                 </div>
 
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-whatsapp w-full btn-lg py-3.5 text-base shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                >
-                  <MessageCircle className="h-5 w-5 fill-current" />
-                  <span>Order on WhatsApp — {formatMoney(totalPricePaise)}</span>
-                </a>
+                {isItemAvailable ? (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-whatsapp w-full btn-lg py-3.5 text-base shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <MessageCircle className="h-5 w-5 fill-current" />
+                    <span>Send Order Request — {formatMoney(totalPricePaise)}</span>
+                  </a>
+                ) : (
+                  <a
+                    href={`https://wa.me/${DEFAULT_STORE_PHONE}?text=${encodeURIComponent(`Hello Anjali's Kitchen! Please let me know when ${product.name} is available next.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary w-full btn-lg py-3.5 text-base shadow-sm flex items-center justify-center gap-2"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    <span>Enquire About Next Availability</span>
+                  </a>
+                )}
 
                 <p className="text-center text-xs text-slate-500">
-                  Clicking will open WhatsApp with your pre-filled order query.
+                  {isItemAvailable
+                    ? 'Opens WhatsApp with your enquiry. We will confirm item availability, preparation time, and delivery/pickup slot with you directly.'
+                    : 'This item is currently out of stock or seasonal. Message us to pre-order or check availability.'}
                 </p>
               </CardContent>
             </Card>

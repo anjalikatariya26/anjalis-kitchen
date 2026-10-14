@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Search, Package, Eye, Pencil, Trash2, Plus } from 'lucide-react';
 
+import { deleteProductAction, toggleProductAvailabilityAction } from './actions';
+
 /* ─── Types ──────────────────────────────────────────── */
 
-interface ProductListItem {
+export interface ProductListItem {
   id: string;
   name: string;
   slug: string;
@@ -24,18 +26,45 @@ interface ProductListItem {
   createdAt: string;
 }
 
-/* ─── Sample data ────────────────────────────────────── */
+interface ProductListProps {
+  initialProducts?: ProductListItem[];
+}
 
-const sampleProducts: ProductListItem[] = [];
-
-/* ─── ProductList ────────────────────────────────────── */
-
-export function ProductList() {
-  const [products] = useState<ProductListItem[]>(sampleProducts);
+export function ProductList({ initialProducts = [] }: ProductListProps) {
+  const [products, setProducts] = useState<ProductListItem[]>(initialProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterFood, setFilterFood] = useState<string>('all');
   const [filterAvailable, setFilterAvailable] = useState<string>('all');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleToggleAvailable = async (id: string, current: boolean) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, isAvailable: !current } : p))
+    );
+    const res = await toggleProductAvailabilityAction(id, !current);
+    if (!res.success) {
+      // Revert if failed
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, isAvailable: current } : p))
+      );
+      alert(res.error || 'Failed to update availability.');
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${name}" from the catalogue?`)) {
+      return;
+    }
+    setDeletingId(id);
+    const res = await deleteProductAction(id);
+    setDeletingId(null);
+    if (res.success) {
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+    } else {
+      alert(res.error || 'Failed to delete product.');
+    }
+  };
 
   const filtered = products.filter((p) => {
     if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -159,19 +188,32 @@ export function ProductList() {
                   <td>{product.variantCount}</td>
                   <td>{product.priceLabel}</td>
                   <td>
-                    <Badge variant={product.isAvailable ? 'available' : 'unavailable'} dot>
-                      {product.isAvailable ? 'Available' : 'Unavailable'}
-                    </Badge>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleAvailable(product.id, product.isAvailable)}
+                      className="cursor-pointer transition-opacity hover:opacity-80"
+                      title="Click to toggle availability"
+                    >
+                      <Badge variant={product.isAvailable ? 'available' : 'unavailable'} dot>
+                        {product.isAvailable ? 'Available' : 'Unavailable'}
+                      </Badge>
+                    </button>
                   </td>
                   <td>
                     <div className="admin-table-actions">
-                      <Button variant="ghost" size="sm" href={`/products/${product.slug}`}>
+                      <Button variant="ghost" size="sm" href={`/products/${product.slug}`} aria-label={`View ${product.name}`}>
                         <Eye size={14} />
                       </Button>
-                      <Button variant="ghost" size="sm" href={`/admin/products/${product.id}/edit`}>
+                      <Button variant="ghost" size="sm" href={`/admin/products/${product.id}/edit`} aria-label={`Edit ${product.name}`}>
                         <Pencil size={14} />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={deletingId === product.id}
+                        onClick={() => handleDelete(product.id, product.name)}
+                        aria-label={`Delete ${product.name}`}
+                      >
                         <Trash2 size={14} style={{ color: 'var(--color-error)' }} />
                       </Button>
                     </div>

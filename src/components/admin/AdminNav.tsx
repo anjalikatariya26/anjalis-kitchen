@@ -12,12 +12,16 @@ import {
   LogOut,
   Menu,
   X,
-  Home,
   MoreHorizontal,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { useState } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { logoutAction } from '@/features/auth/actions';
+
+const subscribe = () => () => {};
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 /* ─── Nav items ──────────────────────────────────────── */
 
@@ -151,6 +155,28 @@ export function AdminMobileNav() {
 export function AdminMobileHeader({ email }: { email?: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
+  const mounted = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -183,25 +209,43 @@ export function AdminMobileHeader({ email }: { email?: string }) {
         )}
       </header>
 
-      {/* Mobile drawer overlay */}
-      {menuOpen && (
+      {/* Mobile drawer overlay via Portal */}
+      {mounted && menuOpen && createPortal(
         <>
           <div
-            className="fixed inset-0 z-50"
-            style={{ background: 'var(--color-overlay)' }}
+            className="fixed inset-0 transition-opacity duration-300"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.65)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+              zIndex: 99998,
+            }}
             onClick={() => setMenuOpen(false)}
             aria-hidden="true"
           />
-          <div
-            className="fixed top-0 left-0 bottom-0 z-50 flex flex-col"
+          <aside
+            className="fixed top-0 left-0 bottom-0 flex flex-col shadow-2xl transition-transform duration-300"
             style={{
-              width: '280px',
-              background: 'var(--color-surface)',
-              boxShadow: 'var(--shadow-3)',
-              animation: 'dialogSheetIn var(--dur-slow) var(--ease-emphasis)',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              bottom: 0,
+              width: 'min(300px, 85vw)',
+              height: '100%',
+              maxHeight: '100dvh',
+              backgroundColor: '#FFFFFF',
+              zIndex: 99999,
+              boxShadow: '8px 0 32px rgba(0,0,0,0.3)',
+              overflowY: 'auto',
             }}
+            aria-label="Admin Navigation Drawer"
           >
-            <div className="flex items-center justify-between p-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-white">
               <div>
                 <h2
                   className="text-lg font-bold"
@@ -209,19 +253,18 @@ export function AdminMobileHeader({ email }: { email?: string }) {
                 >
                   Anjali&apos;s Kitchen
                 </h2>
-                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>Admin Portal</p>
+                <p className="text-xs text-slate-500">Admin Portal</p>
               </div>
               <button
                 onClick={() => setMenuOpen(false)}
                 aria-label="Close menu"
-                className="admin-sidebar-link"
-                style={{ padding: 'var(--space-2)', width: 'auto' }}
+                className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <nav className="flex-1 p-3 space-y-1" aria-label="Admin navigation">
+            <nav className="flex-1 p-3 space-y-1 bg-white" aria-label="Admin navigation">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href, item.exact);
@@ -257,9 +300,9 @@ export function AdminMobileHeader({ email }: { email?: string }) {
               </a>
             </nav>
 
-            <div className="p-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+            <div className="p-3 border-t border-slate-100 bg-white">
               <form action={logoutAction}>
-                <button type="submit" className="admin-sidebar-link" style={{ width: '100%' }}>
+                <button type="submit" className="admin-sidebar-link w-full">
                   <span className="admin-sidebar-icon">
                     <LogOut size={18} />
                   </span>
@@ -267,8 +310,9 @@ export function AdminMobileHeader({ email }: { email?: string }) {
                 </button>
               </form>
             </div>
-          </div>
-        </>
+          </aside>
+        </>,
+        document.body
       )}
     </>
   );

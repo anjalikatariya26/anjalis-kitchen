@@ -4,6 +4,7 @@
  */
 import type { Metadata } from 'next';
 import { ProductCatalogue } from '@/components/catalogue/ProductCatalogue';
+import { getPublicCatalogueProducts, getPublicCategories } from '@/server/services/catalogue.service';
 import { Flame } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -11,7 +12,12 @@ export const metadata: Metadata = {
   description: 'Browse our full menu of homemade Maharashtrian sweets, snacks, chivda, laddu, chikki, and more.',
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const [products, categories] = await Promise.all([
+    getPublicCatalogueProducts(),
+    getPublicCategories(),
+  ]);
+
   return (
     <div className="bg-[#FFFDF9] min-h-screen">
       {/* Hero Banner */}
@@ -44,7 +50,7 @@ export default function ProductsPage() {
       {/* Catalogue */}
       <section className="py-10">
         <div className="mx-auto px-4" style={{ maxWidth: 'var(--content-max-width)' }}>
-          <ProductCatalogue />
+          <ProductCatalogue initialProducts={products} initialCategories={categories} />
         </div>
       </section>
     </div>

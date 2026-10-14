@@ -69,7 +69,9 @@ fi
 
 echo "=== 6. Configuring PM2 ==="
 pm2 delete anjalis-kitchen || true
-pm2 start .next/standalone/server.js --name "anjalis-kitchen" --max-memory-restart 450M
+sudo fuser -k 3000/tcp || true
+sleep 1
+pm2 start .next/standalone/server.js --name "anjalis-kitchen" --node-args="--max-old-space-size=400" --max-memory-restart 450M
 pm2 save
 sudo env PATH=$PATH:/usr/bin /usr/local/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user || true
 
