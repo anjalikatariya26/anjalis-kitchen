@@ -7,7 +7,7 @@
 
 import { useActionState, useState } from 'react';
 import { loginAction, type ActionResult } from '@/features/auth/actions';
-import { Lock, Mail, Key, Sparkles, ShieldCheck } from 'lucide-react';
+import { Mail, Key, ShieldCheck } from 'lucide-react';
 
 export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const [state, formAction, isPending] = useActionState<ActionResult | null, FormData>(
@@ -15,36 +15,11 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
     null
   );
 
-  const [emailVal, setEmailVal] = useState('anjalikatariya2@gmail.com');
-  const [passwordVal, setPasswordVal] = useState('Anjali@26Katariya');
-
-  const fillDefaultCredentials = () => {
-    setEmailVal('anjalikatariya2@gmail.com');
-    setPasswordVal('Anjali@26Katariya');
-  };
+  const [emailVal, setEmailVal] = useState('');
+  const [passwordVal, setPasswordVal] = useState('');
 
   return (
     <div className="space-y-6">
-      {/* Dev helper credential banner */}
-      <div className="rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
-            <Sparkles className="h-4 w-4 text-amber-600" />
-            <span>Default Admin Credentials:</span>
-          </div>
-          <button
-            type="button"
-            onClick={fillDefaultCredentials}
-            className="text-[11px] font-bold text-maroon-800 bg-white hover:bg-maroon-50 px-2.5 py-1 rounded-lg border border-amber-300 shadow-sm transition-colors"
-          >
-            Auto-fill
-          </button>
-        </div>
-        <div className="text-xs text-slate-700 font-mono space-y-0.5 pt-1">
-          <div><span className="text-slate-500">Email:</span> anjalikatariya2@gmail.com</div>
-          <div><span className="text-slate-500">Pass:</span> Anjali@26Katariya</div>
-        </div>
-      </div>
 
       <form action={formAction} className="space-y-4">
         {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}

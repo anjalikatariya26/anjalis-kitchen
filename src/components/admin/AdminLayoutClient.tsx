@@ -21,17 +21,17 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#FFFDF9]">
+    <div className="flex min-h-screen bg-[#FFFDF9] w-full overflow-x-hidden">
       {/* Desktop sidebar */}
       <AdminSidebar />
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden">
         {/* Mobile header */}
         <AdminMobileHeader />
 
-        <main className="flex-1 overflow-auto pb-20 lg:pb-0">
-          <div className="mx-auto max-w-6xl p-4 sm:p-6">{children}</div>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 lg:pb-0">
+          <div className="mx-auto max-w-6xl p-3 sm:p-6 w-full">{children}</div>
         </main>
 
         {/* Mobile bottom nav */}
