@@ -198,6 +198,8 @@ export default function HomePage() {
                     src="/images/modak.jpg"
                     alt="Authentic Ukadiche Modak — signature festival dish"
                     className="h-full w-full object-cover img-parallax"
+                    fetchPriority="high"
+                    decoding="async"
                   />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
@@ -315,6 +317,8 @@ export default function HomePage() {
                   src={cat.img}
                   alt={cat.name}
                   className="h-full w-full object-cover img-parallax"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                 <span className="absolute top-2.5 left-2.5 text-[10px] font-bold text-slate-950 bg-gradient-to-r from-amber-300 to-amber-400 px-2.5 py-0.5 rounded-full shadow-lg">
@@ -374,6 +378,8 @@ export default function HomePage() {
                       src={prod.image}
                       alt={prod.name}
                       className="h-full w-full object-cover img-parallax"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute top-3 left-3">
@@ -523,6 +529,8 @@ export default function HomePage() {
                   src="/images/hamper.jpg"
                   alt="Diwali Faral Gift Box"
                   className="h-full w-full object-cover img-parallax"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 glass-dark rounded-xl p-3 text-white">

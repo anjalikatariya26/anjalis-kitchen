@@ -114,6 +114,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
             <img
               src={mainImage}
               alt={product.name}
+              decoding="async"
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = '/images/modak.jpg';
@@ -143,7 +144,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
                       : 'border-slate-200 opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt="" className="h-full w-full object-cover" />
+                  <img src={img} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                 </button>
               ))}
             </div>

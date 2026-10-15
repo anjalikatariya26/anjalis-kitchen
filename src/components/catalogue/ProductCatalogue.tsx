@@ -226,6 +226,8 @@ function ProductCatalogueContent({
                     <img
                       src={product.imageUrl || '/images/modak.jpg'}
                       alt={product.name}
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = '/images/modak.jpg';

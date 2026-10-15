@@ -5,8 +5,7 @@
  */
 
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Gift, MessageCircle, Sparkles, Check, ArrowRight, ShieldCheck, Crown, Star, Heart } from 'lucide-react';
+import { Gift, MessageCircle, Sparkles, Check, Crown } from 'lucide-react';
 import { generateWhatsAppLink } from '@/lib/whatsapp';
 
 export const metadata: Metadata = {
@@ -140,6 +139,8 @@ export default function HampersPage() {
                       src={hamper.image}
                       alt={hamper.name}
                       className="h-full w-full object-cover img-parallax"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     

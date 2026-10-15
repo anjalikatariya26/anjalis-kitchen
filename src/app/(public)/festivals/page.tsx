@@ -134,6 +134,8 @@ export default function FestivalsPage() {
                     src={f.img}
                     alt={f.name}
                     className="h-full w-full object-cover img-parallax"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   
