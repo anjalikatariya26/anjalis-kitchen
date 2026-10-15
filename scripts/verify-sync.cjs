@@ -14,7 +14,13 @@ async function checkSync() {
       where: { deletedAt: null },
       take: 3,
       orderBy: { createdAt: 'desc' },
-      select: { id: true, name: true, price: true, isAvailable: true },
+      select: {
+        id: true,
+        name: true,
+        priceFromPaise: true,
+        isAvailable: true,
+        variants: { select: { label: true, pricePaise: true } },
+      },
     });
 
     console.log('--- DATABASE SYNC CHECK ---');
