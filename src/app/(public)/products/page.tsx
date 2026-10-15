@@ -7,6 +7,8 @@ import { ProductCatalogue } from '@/components/catalogue/ProductCatalogue';
 import { getPublicCatalogueProducts, getPublicCategories } from '@/server/services/catalogue.service';
 import { Flame } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Menu — Anjali's Kitchen",
   description: 'Browse our full menu of homemade Maharashtrian sweets, snacks, chivda, laddu, chikki, and more.',

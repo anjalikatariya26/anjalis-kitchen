@@ -8,6 +8,8 @@ import type { Metadata } from 'next';
 import { ProductDetailView } from '@/components/catalogue/ProductDetailView';
 import { getPublicProductDetail } from '@/server/services/catalogue.service';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
