@@ -226,6 +226,10 @@ function ProductCatalogueContent({
                     <img
                       src={product.imageUrl || '/images/modak.jpg'}
                       alt={product.name}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/images/modak.jpg';
+                      }}
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">

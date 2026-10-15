@@ -1,11 +1,22 @@
-/**
- * Storage factory — resolves the configured driver.
- */
+import path from 'path';
 import type { StorageProvider } from './StorageProvider';
 import { LocalStorageDriver } from './local.driver';
 import { S3StorageDriver } from './s3.driver';
 
 let instance: StorageProvider | null = null;
+
+function resolveUploadDir(): string {
+  const configured = process.env.STORAGE_LOCAL_DIR;
+  if (configured && path.isAbsolute(configured)) {
+    return configured;
+  }
+  const cwd = process.cwd();
+  // If running inside Next.js standalone directory (.next/standalone), resolve to project root
+  if (cwd.includes(path.join('.next', 'standalone')) || cwd.includes('.next/standalone')) {
+    return path.resolve(cwd, '..', '..', configured ?? 'uploads');
+  }
+  return path.resolve(cwd, configured ?? 'uploads');
+}
 
 export function getStorage(): StorageProvider {
   if (instance) return instance;
@@ -15,7 +26,7 @@ export function getStorage(): StorageProvider {
   switch (driver) {
     case 'local':
       instance = new LocalStorageDriver(
-        process.env.STORAGE_LOCAL_DIR ?? './uploads',
+        resolveUploadDir(),
         process.env.STORAGE_PUBLIC_BASE_URL ?? '/media'
       );
       break;

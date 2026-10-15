@@ -114,6 +114,10 @@ export function ProductDetailView({ product }: ProductDetailProps) {
             <img
               src={mainImage}
               alt={product.name}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = '/images/modak.jpg';
+              }}
               className="h-full w-full object-cover object-center"
             />
             {product.isJain && (
