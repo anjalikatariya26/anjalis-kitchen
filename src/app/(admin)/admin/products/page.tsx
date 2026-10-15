@@ -2,6 +2,8 @@ import { requireAuth } from '@/features/auth/actions';
 import { ProductList } from '@/features/products/ProductList';
 import { prisma } from '@/server/db';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminProductsPage() {
   await requireAuth();
 

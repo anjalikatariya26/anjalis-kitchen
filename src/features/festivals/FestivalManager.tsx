@@ -10,6 +10,13 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useToast } from '@/components/ui/Toast';
 import { Plus, Pencil, Trash2, Sparkles, GripVertical, Search } from 'lucide-react';
 
+import {
+  createFestivalAction,
+  updateFestivalAction,
+  toggleFestivalAction,
+  deleteFestivalAction,
+} from './actions';
+
 /* ─── Types ──────────────────────────────────────────── */
 
 interface Festival {
@@ -22,26 +29,20 @@ interface Festival {
   _count?: { products: number; hampers: number };
 }
 
-/* ─── Sample data ────────────────────────────────────── */
-
-const sampleFestivals: Festival[] = [
-  { id: '1', name: 'Ganesh Chaturthi', slug: 'ganesh-chaturthi', description: 'Ganeshotsav faral and modak', isActive: true, sortOrder: 0, _count: { products: 0, hampers: 0 } },
-  { id: '2', name: 'Raksha Bandhan', slug: 'raksha-bandhan', description: 'Rakhi special sweets and snacks', isActive: true, sortOrder: 1, _count: { products: 0, hampers: 0 } },
-  { id: '3', name: 'Navratri', slug: 'navratri', description: 'Farali snacks for Navratri fasting', isActive: true, sortOrder: 2, _count: { products: 0, hampers: 0 } },
-  { id: '4', name: 'Diwali', slug: 'diwali', description: 'Diwali faral and gift hampers', isActive: true, sortOrder: 3, _count: { products: 0, hampers: 0 } },
-  { id: '5', name: 'Makar Sankranti', slug: 'makar-sankranti', description: 'Til and chikki for Sankranti', isActive: true, sortOrder: 4, _count: { products: 0, hampers: 0 } },
-  { id: '6', name: "Father's Day", slug: 'fathers-day', description: 'Special cakes and treats', isActive: false, sortOrder: 5, _count: { products: 0, hampers: 0 } },
-];
+interface FestivalManagerProps {
+  initialFestivals?: Festival[];
+}
 
 /* ─── FestivalManager ────────────────────────────────── */
 
-export function FestivalManager() {
+export function FestivalManager({ initialFestivals = [] }: FestivalManagerProps) {
   const { toast } = useToast();
-  const [festivals, setFestivals] = useState<Festival[]>(sampleFestivals);
+  const [festivals, setFestivals] = useState<Festival[]>(initialFestivals);
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingFestival, setEditingFestival] = useState<Festival | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<Festival | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -68,78 +69,73 @@ export function FestivalManager() {
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const name = formName.trim();
-    if (name.length < 2 || name.length > 60) {
-      setFormError('Name must be 2–60 characters.');
+    if (name.length < 2 || name.length > 80) {
+      setFormError('Name must be 2–80 characters.');
       return;
     }
 
-    // Duplicate check
-    const nameKey = name.toLowerCase().replace(/[^\w\s]/g, '').trim();
-    const existing = festivals.find(
-      (f) => f.id !== editingFestival?.id && f.name.toLowerCase().replace(/[^\w\s]/g, '').trim() === nameKey
-    );
-
-    if (existing) {
-      setFormError(`A festival with a similar name already exists: "${existing.name}"`);
-      return;
-    }
+    setIsSaving(true);
+    setFormError('');
 
     if (editingFestival) {
-      setFestivals((prev) =>
-        prev.map((f) =>
-          f.id === editingFestival.id
-            ? { ...f, name, description: formDescription || null }
-            : f
-        )
-      );
-      toast({ variant: 'success', message: `Festival "${name}" updated.` });
+      const res = await updateFestivalAction(editingFestival.id, name, formDescription);
+      setIsSaving(false);
+      if (res.success) {
+        setFestivals((prev) =>
+          prev.map((f) =>
+            f.id === editingFestival.id
+              ? { ...f, name, description: formDescription || null }
+              : f
+          )
+        );
+        toast({ variant: 'success', message: `Festival "${name}" updated.` });
+        setDialogOpen(false);
+      } else {
+        setFormError(res.error || 'Failed to update festival.');
+      }
     } else {
-      const newFest: Festival = {
-        id: crypto.randomUUID(),
-        name,
-        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        description: formDescription || null,
-        isActive: true,
-        sortOrder: festivals.length,
-        _count: { products: 0, hampers: 0 },
-      };
-      setFestivals((prev) => [...prev, newFest]);
-      toast({ variant: 'success', message: `Festival "${name}" created.` });
+      const res = await createFestivalAction(name, formDescription);
+      setIsSaving(false);
+      if (res.success && res.festival) {
+        setFestivals((prev) => [...prev, res.festival as Festival]);
+        toast({ variant: 'success', message: `Festival "${name}" created.` });
+        setDialogOpen(false);
+      } else {
+        setFormError(res.error || 'Failed to create festival.');
+      }
     }
-
-    setDialogOpen(false);
   };
 
-  const handleToggle = (fest: Festival) => {
+  const handleToggle = async (fest: Festival) => {
     const productCount = fest._count?.products ?? 0;
     const hamperCount = fest._count?.hampers ?? 0;
+    const nextActive = !fest.isActive;
 
     setFestivals((prev) =>
-      prev.map((f) => (f.id === fest.id ? { ...f, isActive: !f.isActive } : f))
+      prev.map((f) => (f.id === fest.id ? { ...f, isActive: nextActive } : f))
     );
 
-    const action = fest.isActive ? 'deactivated' : 'activated';
-    let msg = `"${fest.name}" ${action}.`;
-    if (fest.isActive && (productCount > 0 || hamperCount > 0)) {
-      msg += ` ${productCount} products and ${hamperCount} hampers will be hidden from the public site.`;
+    const res = await toggleFestivalAction(fest.id, nextActive);
+    if (!res.success) {
+      setFestivals((prev) =>
+        prev.map((f) => (f.id === fest.id ? { ...f, isActive: fest.isActive } : f))
+      );
+      toast({ variant: 'error', message: res.error || 'Failed to update festival.' });
+      return;
     }
 
-    toast({
-      variant: 'info',
-      message: msg,
-      action: {
-        label: 'Undo',
-        onClick: () =>
-          setFestivals((prev) =>
-            prev.map((f) => (f.id === fest.id ? { ...f, isActive: fest.isActive } : f))
-          ),
-      },
-    });
+    const action = nextActive ? 'activated' : 'deactivated';
+    let msg = `"${fest.name}" ${action}.`;
+    if (!nextActive && (productCount > 0 || hamperCount > 0)) {
+      msg += ` Associated items may be hidden from the public site.`;
+    }
+
+    toast({ variant: 'info', message: msg });
   };
 
-  const handleDelete = (fest: Festival) => {
+  const handleDelete = async (fest: Festival) => {
     const productCount = fest._count?.products ?? 0;
     const hamperCount = fest._count?.hampers ?? 0;
 
@@ -152,8 +148,13 @@ export function FestivalManager() {
       return;
     }
 
-    setFestivals((prev) => prev.filter((f) => f.id !== fest.id));
-    toast({ variant: 'success', message: `Festival "${fest.name}" deleted.` });
+    const res = await deleteFestivalAction(fest.id);
+    if (res.success) {
+      setFestivals((prev) => prev.filter((f) => f.id !== fest.id));
+      toast({ variant: 'success', message: `Festival "${fest.name}" deleted.` });
+    } else {
+      toast({ variant: 'error', message: res.error || 'Failed to delete festival.' });
+    }
     setDeleteConfirm(null);
   };
 
@@ -277,8 +278,8 @@ export function FestivalManager() {
             <Button variant="secondary" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editingFestival ? 'Save Changes' : 'Create Festival'}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? 'Saving...' : editingFestival ? 'Save Changes' : 'Create Festival'}
             </Button>
           </DialogFooter>
         </DialogContent>

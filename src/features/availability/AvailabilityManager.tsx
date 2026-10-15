@@ -9,6 +9,12 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useToast } from '@/components/ui/Toast';
 import { Search, ToggleRight, CheckSquare, Package } from 'lucide-react';
 
+import {
+  toggleProductAvailabilityAction,
+  toggleVariantAvailabilityAction,
+  bulkToggleAvailabilityAction,
+} from '@/features/products/actions';
+
 /* ─── Types ──────────────────────────────────────────── */
 
 interface AvailabilityItem {
@@ -21,11 +27,13 @@ interface AvailabilityItem {
   variants: { id: string; label: string; isAvailable: boolean }[];
 }
 
-/* ─── Empty state — shown until DB is connected ──────── */
+interface AvailabilityManagerProps {
+  initialItems?: AvailabilityItem[];
+}
 
-export function AvailabilityManager() {
+export function AvailabilityManager({ initialItems = [] }: AvailabilityManagerProps) {
   const { toast } = useToast();
-  const [items, setItems] = useState<AvailabilityItem[]>([]);
+  const [items, setItems] = useState<AvailabilityItem[]>(initialItems);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<'all' | 'unavailable' | 'festive'>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -38,37 +46,58 @@ export function AvailabilityManager() {
     return true;
   });
 
-  const toggleProduct = (item: AvailabilityItem) => {
+  const toggleProduct = async (item: AvailabilityItem) => {
     const prev = item.isAvailable;
+    const next = !prev;
     setItems((list) =>
-      list.map((i) => (i.id === item.id ? { ...i, isAvailable: !prev } : i))
+      list.map((i) => (i.id === item.id ? { ...i, isAvailable: next } : i))
     );
+    const res = await toggleProductAvailabilityAction(item.id, next);
+    if (!res.success) {
+      setItems((list) =>
+        list.map((i) => (i.id === item.id ? { ...i, isAvailable: prev } : i))
+      );
+      toast({ variant: 'error', message: res.error || 'Failed to update availability.' });
+      return;
+    }
     toast({
       variant: 'info',
-      message: `"${item.name}" marked ${prev ? 'unavailable' : 'available'}.`,
-      duration: 5000,
-      action: {
-        label: 'Undo',
-        onClick: () =>
-          setItems((list) =>
-            list.map((i) => (i.id === item.id ? { ...i, isAvailable: prev } : i))
-          ),
-      },
+      message: `"${item.name}" marked ${next ? 'available' : 'unavailable'}.`,
     });
   };
 
-  const toggleVariant = (productId: string, variantId: string) => {
+  const toggleVariant = async (productId: string, variantId: string) => {
+    let nextState = true;
     setItems((list) =>
       list.map((item) => {
         if (item.id !== productId) return item;
         return {
           ...item,
-          variants: item.variants.map((v) =>
-            v.id === variantId ? { ...v, isAvailable: !v.isAvailable } : v
-          ),
+          variants: item.variants.map((v) => {
+            if (v.id === variantId) {
+              nextState = !v.isAvailable;
+              return { ...v, isAvailable: nextState };
+            }
+            return v;
+          }),
         };
       })
     );
+    const res = await toggleVariantAvailabilityAction(variantId, nextState);
+    if (!res.success) {
+      setItems((list) =>
+        list.map((item) => {
+          if (item.id !== productId) return item;
+          return {
+            ...item,
+            variants: item.variants.map((v) =>
+              v.id === variantId ? { ...v, isAvailable: !nextState } : v
+            ),
+          };
+        })
+      );
+      toast({ variant: 'error', message: res.error || 'Failed to update size availability.' });
+    }
   };
 
   const toggleSelect = (id: string) => {
@@ -88,35 +117,25 @@ export function AvailabilityManager() {
     }
   };
 
-  const bulkToggle = (available: boolean) => {
+  const bulkToggle = async (available: boolean) => {
     const count = selectedIds.size;
-    const previousStates = new Map<string, boolean>();
+    const selectedArray = Array.from(selectedIds);
+    if (selectedArray.length === 0) return;
 
     setItems((list) =>
-      list.map((i) => {
-        if (selectedIds.has(i.id)) {
-          previousStates.set(i.id, i.isAvailable);
-          return { ...i, isAvailable: available };
-        }
-        return i;
-      })
+      list.map((i) => (selectedIds.has(i.id) ? { ...i, isAvailable: available } : i))
     );
-
     setSelectedIds(new Set());
-    toast({
-      variant: 'success',
-      message: `${count} products marked ${available ? 'available' : 'unavailable'}.`,
-      action: {
-        label: 'Undo',
-        onClick: () =>
-          setItems((list) =>
-            list.map((i) => {
-              const prev = previousStates.get(i.id);
-              return prev !== undefined ? { ...i, isAvailable: prev } : i;
-            })
-          ),
-      },
-    });
+
+    const res = await bulkToggleAvailabilityAction(selectedArray, available);
+    if (res.success) {
+      toast({
+        variant: 'success',
+        message: `${count} product(s) marked ${available ? 'available' : 'unavailable'}.`,
+      });
+    } else {
+      toast({ variant: 'error', message: res.error || 'Failed to bulk update availability.' });
+    }
   };
 
   const tabs = [

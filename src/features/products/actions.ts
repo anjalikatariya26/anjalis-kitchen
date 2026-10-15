@@ -123,7 +123,7 @@ export async function createProductAction(
     }
 
     // ── Generate unique slug ──
-    let baseSlug = slugify(name);
+    const baseSlug = slugify(name);
     let slug = baseSlug;
     let counter = 1;
     while (await prisma.product.findUnique({ where: { slug } })) {
@@ -274,15 +274,16 @@ export async function createProductAction(
     // ── Revalidate cached pages ──
     revalidatePath('/products');
     revalidatePath('/admin/products');
+    revalidatePath('/admin');
     revalidatePath('/');
     revalidatePath(`/products/${slug}`);
 
     return { success: true, productId: product.id };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Failed to create product:', err);
     return {
       success: false,
-      error: err.message || 'Failed to create product. Please try again.',
+      error: err instanceof Error ? err.message : 'Failed to create product. Please try again.',
     };
   }
 }
@@ -340,11 +341,11 @@ export async function updateProductAction(
       const imageFiles: File[] = [];
       const img1 = formData.get('image_0');
       const img2 = formData.get('image_1');
-      if (img1 && typeof (img1 as any).arrayBuffer === 'function' && (img1 as File).size > 0) {
-        imageFiles.push(img1 as File);
+      if (img1 && img1 instanceof File && img1.size > 0) {
+        imageFiles.push(img1);
       }
-      if (img2 && typeof (img2 as any).arrayBuffer === 'function' && (img2 as File).size > 0) {
-        imageFiles.push(img2 as File);
+      if (img2 && img2 instanceof File && img2.size > 0) {
+        imageFiles.push(img2);
       }
 
       if (imageFiles.length > 0) {
@@ -461,11 +462,11 @@ export async function updateProductAction(
     revalidatePath(`/products/${existing.slug}`);
 
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Failed to update product:', err);
     return {
       success: false,
-      error: err.message || 'Failed to update product.',
+      error: err instanceof Error ? err.message : 'Failed to update product.',
     };
   }
 }
@@ -496,11 +497,11 @@ export async function deleteProductAction(
     }
 
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Failed to delete product:', err);
     return {
       success: false,
-      error: err.message || 'Failed to delete product.',
+      error: err instanceof Error ? err.message : 'Failed to delete product.',
     };
   }
 }
@@ -527,11 +528,73 @@ export async function toggleProductAvailabilityAction(
     }
 
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Failed to update product availability:', err);
     return {
       success: false,
-      error: err.message || 'Failed to update availability.',
+      error: err instanceof Error ? err.message : 'Failed to update availability.',
+    };
+  }
+}
+
+/* ─── Toggle Variant Availability ─────────────────────── */
+
+export async function toggleVariantAvailabilityAction(
+  variantId: string,
+  isAvailable: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+
+    const variant = await prisma.productVariant.update({
+      where: { id: variantId },
+      data: { isAvailable },
+      include: { product: true },
+    });
+
+    revalidatePath('/products');
+    revalidatePath('/admin/products');
+    revalidatePath('/admin/availability');
+    revalidatePath('/');
+    if (variant.product?.slug) {
+      revalidatePath(`/products/${variant.product.slug}`);
+    }
+
+    return { success: true };
+  } catch (err: unknown) {
+    console.error('Failed to update variant availability:', err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to update variant availability.',
+    };
+  }
+}
+
+/* ─── Bulk Toggle Product Availability ────────────────── */
+
+export async function bulkToggleAvailabilityAction(
+  productIds: string[],
+  isAvailable: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+
+    await prisma.product.updateMany({
+      where: { id: { in: productIds } },
+      data: { isAvailable },
+    });
+
+    revalidatePath('/products');
+    revalidatePath('/admin/products');
+    revalidatePath('/admin/availability');
+    revalidatePath('/');
+
+    return { success: true };
+  } catch (err: unknown) {
+    console.error('Failed to bulk update availability:', err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to bulk update availability.',
     };
   }
 }
@@ -562,8 +625,8 @@ export async function getFormDataAction(): Promise<{
       categories: categories.length > 0 ? categories : DEFAULT_CATEGORIES,
       festivals: festivals.length > 0 ? festivals : DEFAULT_FESTIVALS,
     };
-  } catch (err: any) {
-    console.warn('Database not reachable for getFormDataAction, using fallback options:', err?.message);
+  } catch (err: unknown) {
+    console.warn('Database not reachable for getFormDataAction, using fallback options:', err instanceof Error ? err.message : String(err));
     return {
       categories: DEFAULT_CATEGORIES,
       festivals: DEFAULT_FESTIVALS,
