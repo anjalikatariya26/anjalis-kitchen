@@ -138,7 +138,12 @@ export class RateLimitError extends AppError {
   public readonly retryAfter: number;
 
   constructor(retryAfterSeconds: number) {
-    super('RATE_LIMITED', 'Too many requests', 429);
+    const mins = Math.ceil(retryAfterSeconds / 60);
+    const msg =
+      mins > 1
+        ? `Too many attempts. Please wait ${mins} minutes before trying again.`
+        : `Too many attempts. Please wait ${retryAfterSeconds} seconds before trying again.`;
+    super('RATE_LIMITED', msg, 429);
     this.name = 'RateLimitError';
     this.retryAfter = retryAfterSeconds;
   }

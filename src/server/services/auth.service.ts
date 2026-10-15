@@ -17,12 +17,12 @@ import {
 
 // ─── Constants ──────────────────────────────────────────
 
-const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_MINUTES = 15;
+const MAX_FAILED_ATTEMPTS = 10;
+const LOCKOUT_MINUTES = 5;
 const SESSION_IDLE_HOURS = Number(process.env.SESSION_IDLE_HOURS ?? 12);
 const SESSION_ABSOLUTE_DAYS = Number(process.env.SESSION_ABSOLUTE_DAYS ?? 7);
 const LOGIN_RATE_WINDOW_MINUTES = 15;
-const LOGIN_RATE_MAX_ATTEMPTS = 10;
+const LOGIN_RATE_MAX_ATTEMPTS = 50;
 
 // ─── Helpers ────────────────────────────────────────────
 
@@ -124,7 +124,6 @@ export async function login(
 
   // 3. Check lockout
   if (admin.lockedUntil && admin.lockedUntil > new Date()) {
-    await logAttempt(false);
     const retryAfter = Math.ceil((admin.lockedUntil.getTime() - Date.now()) / 1000);
     logger.warn('Login blocked: account locked', { adminId: admin.id });
     throw new RateLimitError(retryAfter);

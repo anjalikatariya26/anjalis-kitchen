@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/features/auth/actions';
 import { LoginForm } from '@/features/auth/LoginForm';
-import { Lock, ShieldCheck, ArrowLeft, ChefHat } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, ChefHat } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -51,6 +51,7 @@ export default async function AdminLoginPage({
       <div className="relative z-10 mx-auto w-full max-w-5xl flex items-center justify-between">
         <Link
           href="/"
+          prefetch={false}
           className="inline-flex items-center text-xs sm:text-sm font-semibold text-amber-200/70 hover:text-amber-100 transition-colors group"
         >
           <ArrowLeft className="mr-1.5 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
