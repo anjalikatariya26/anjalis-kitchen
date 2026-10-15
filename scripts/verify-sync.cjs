@@ -19,7 +19,7 @@ async function checkSync() {
         name: true,
         priceFromPaise: true,
         isAvailable: true,
-        variants: { select: { label: true, pricePaise: true } },
+        variants: { select: { displayLabel: true, pricePaise: true } },
       },
     });
 
