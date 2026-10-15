@@ -39,10 +39,10 @@ async function checkSync() {
       const tokenHash = createHash('sha256').update(rawToken).digest('hex');
       const session = await prisma.session.create({
         data: {
-          adminUserId: admin.id,
-          tokenHash,
+          id: tokenHash,
+          adminId: admin.id,
           expiresAt: new Date(Date.now() + 600000),
-          lastSeenAt: new Date(),
+          ip: '127.0.0.1',
         },
       });
 
