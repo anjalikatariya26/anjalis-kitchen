@@ -23,12 +23,14 @@ async function checkSync() {
       },
     });
 
+    const mediaAssets = await prisma.mediaAsset.findMany();
     console.log('--- DATABASE SYNC CHECK ---');
     console.log(`Total Products: ${products}`);
     console.log(`Available Products: ${available}`);
     console.log(`Categories: ${categories}`);
     console.log(`Festivals: ${festivals}`);
     console.log('Latest Products:', JSON.stringify(latest, null, 2));
+    console.log('Media Assets in DB:', JSON.stringify(mediaAssets, null, 2));
     console.log('---------------------------');
 
     // Test live /admin page rendering
