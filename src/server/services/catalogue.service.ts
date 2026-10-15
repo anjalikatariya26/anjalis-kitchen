@@ -188,6 +188,10 @@ export async function getPublicCatalogueProducts(): Promise<PublicProductItem[]>
         variants: {
           orderBy: { sortOrder: 'asc' },
         },
+        images: {
+          orderBy: { position: 'asc' },
+          include: { media: true },
+        },
       },
     });
 
@@ -198,6 +202,24 @@ export async function getPublicCatalogueProducts(): Promise<PublicProductItem[]>
         if (firstVariant && firstVariant.pricePaise) {
           priceLabel = `₹${Math.round(firstVariant.pricePaise / 100)} / ${firstVariant.displayLabel}`;
         }
+
+        // Use the first uploaded image, or fall back to slug-based defaults
+        let imageUrl: string | null = null;
+        if (p.images.length > 0 && p.images[0].media) {
+          const media = p.images[0].media;
+          const publicBaseUrl = process.env.STORAGE_PUBLIC_BASE_URL || '/media';
+          imageUrl = `${publicBaseUrl}/${media.storageKey}`;
+        } else {
+          // Fallback for products without uploaded images
+          imageUrl = p.slug.includes('modak')
+            ? '/images/modak.jpg'
+            : p.slug.includes('ladoo') || p.slug.includes('laddu')
+            ? '/images/ladoo.jpg'
+            : p.slug.includes('hamper')
+            ? '/images/hamper.jpg'
+            : null;
+        }
+
         return {
           id: p.id,
           name: p.name,
@@ -208,13 +230,7 @@ export async function getPublicCatalogueProducts(): Promise<PublicProductItem[]>
           categoryName: p.category.name,
           isAvailable: p.isAvailable,
           priceLabel,
-          imageUrl: p.slug.includes('modak')
-            ? '/images/modak.jpg'
-            : p.slug.includes('ladoo') || p.slug.includes('laddu')
-            ? '/images/ladoo.jpg'
-            : p.slug.includes('hamper')
-            ? '/images/hamper.jpg'
-            : null,
+          imageUrl,
         };
       });
     }
@@ -237,17 +253,31 @@ export async function getPublicProductDetail(slug: string) {
         variants: {
           orderBy: { sortOrder: 'asc' },
         },
+        images: {
+          orderBy: { position: 'asc' },
+          include: { media: true },
+        },
       },
     });
 
     if (product) {
-      const images: string[] = product.slug.includes('modak')
-        ? ['/images/modak.jpg']
-        : product.slug.includes('ladoo') || product.slug.includes('laddu')
-        ? ['/images/ladoo.jpg']
-        : product.slug.includes('hamper')
-        ? ['/images/hamper.jpg']
-        : ['/images/modak.jpg'];
+      const publicBaseUrl = process.env.STORAGE_PUBLIC_BASE_URL || '/media';
+
+      // Use uploaded images from database, or fall back to slug-based defaults
+      let images: string[];
+      if (product.images.length > 0) {
+        images = product.images
+          .filter((img) => img.media)
+          .map((img) => `${publicBaseUrl}/${img.media.storageKey}`);
+      } else {
+        images = product.slug.includes('modak')
+          ? ['/images/modak.jpg']
+          : product.slug.includes('ladoo') || product.slug.includes('laddu')
+          ? ['/images/ladoo.jpg']
+          : product.slug.includes('hamper')
+          ? ['/images/hamper.jpg']
+          : ['/images/modak.jpg'];
+      }
 
       return {
         id: product.id,

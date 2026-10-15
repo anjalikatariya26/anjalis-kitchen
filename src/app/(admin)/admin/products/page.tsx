@@ -5,36 +5,55 @@ import { prisma } from '@/server/db';
 export default async function AdminProductsPage() {
   await requireAuth();
 
-  const dbProducts = await prisma.product.findMany({
-    where: { deletedAt: null },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      category: true,
-      variants: { orderBy: { sortOrder: 'asc' } },
-      festivals: { include: { festival: true } },
-    },
-  });
+  let products: {
+    id: string;
+    name: string;
+    slug: string;
+    productType: 'FESTIVE' | 'REGULAR';
+    foodType: 'JAIN' | 'REGULAR';
+    categoryName: string;
+    festivals: string[];
+    variantCount: number;
+    isAvailable: boolean;
+    priceLabel: string;
+    createdAt: string;
+  }[] = [];
 
-  const products = dbProducts.map((p) => {
-    const minVariant = p.variants[0];
-    const priceLabel = minVariant && minVariant.pricePaise
-      ? `₹${Math.round(minVariant.pricePaise / 100)} / ${minVariant.displayLabel}`
-      : 'On enquiry';
+  try {
+    const dbProducts = await prisma.product.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        category: true,
+        variants: { orderBy: { sortOrder: 'asc' } },
+        festivals: { include: { festival: true } },
+        images: { orderBy: { position: 'asc' }, include: { media: true } },
+      },
+    });
 
-    return {
-      id: p.id,
-      name: p.name,
-      slug: p.slug,
-      productType: p.productType,
-      foodType: p.foodType,
-      categoryName: p.category.name,
-      festivals: p.festivals.map((f) => f.festival.name),
-      variantCount: p.variants.length,
-      isAvailable: p.isAvailable,
-      priceLabel,
-      createdAt: p.createdAt.toISOString().slice(0, 10),
-    };
-  });
+    products = dbProducts.map((p) => {
+      const minVariant = p.variants[0];
+      const priceLabel = minVariant && minVariant.pricePaise
+        ? `₹${Math.round(minVariant.pricePaise / 100)} / ${minVariant.displayLabel}`
+        : 'On enquiry';
+
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        productType: p.productType,
+        foodType: p.foodType,
+        categoryName: p.category.name,
+        festivals: p.festivals.map((f) => f.festival.name),
+        variantCount: p.variants.length,
+        isAvailable: p.isAvailable,
+        priceLabel,
+        createdAt: p.createdAt.toISOString().slice(0, 10),
+      };
+    });
+  } catch (err) {
+    console.error('Failed to load products for admin list:', err);
+  }
 
   return (
     <div>

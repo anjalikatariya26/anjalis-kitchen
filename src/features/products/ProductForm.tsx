@@ -8,9 +8,12 @@
  * 2. Type (food type, product type, festivals, category)
  * 3. Photos (drag-and-drop, up to 2)
  * 4. Sizes and Prices (variant editor)
+ *
+ * Now wired to real database via createProductAction server action.
  */
 
-import { useState, useCallback, type ChangeEvent } from 'react';
+import { useState, useCallback, useEffect, type ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -27,7 +30,10 @@ import {
   ChevronDown,
   Save,
   Eye,
+  Loader2,
 } from 'lucide-react';
+
+import { createProductAction, updateProductAction, getFormDataAction } from './actions';
 
 /* ─── Types ──────────────────────────────────────────── */
 
@@ -53,28 +59,41 @@ interface ProductFormData {
   isAvailable: boolean;
 }
 
-/* ─── Sample categories and festivals ────────────────── */
+export interface InitialProductData {
+  name: string;
+  shortDescription?: string | null;
+  description: string;
+  productType: 'FESTIVE' | 'REGULAR';
+  foodType: 'JAIN' | 'REGULAR';
+  categoryId: string;
+  festivalIds: string[];
+  isAvailable: boolean;
+  variants: {
+    id?: string;
+    unitType?: string;
+    unit: string;
+    quantityValue: number | string;
+    displayLabel: string;
+    pricePaise?: number | null;
+    isAvailable: boolean;
+  }[];
+  images?: string[];
+}
 
-const sampleCategories = [
-  { id: '1', name: 'Laddu' },
-  { id: '2', name: 'Chikki' },
-  { id: '3', name: 'Chivda' },
-  { id: '4', name: 'Namkeen & Farsan' },
-  { id: '5', name: 'Sweets' },
-  { id: '6', name: 'Modak' },
-  { id: '7', name: 'Snacks & Nashta' },
-  { id: '8', name: 'Chutney' },
-  { id: '9', name: 'Cakes' },
-  { id: '10', name: 'Cookies' },
-];
+interface ProductFormProps {
+  productId?: string;
+  initialProduct?: InitialProductData;
+}
 
-const sampleFestivals = [
-  { id: '1', name: 'Ganesh Chaturthi' },
-  { id: '2', name: 'Raksha Bandhan' },
-  { id: '3', name: 'Navratri' },
-  { id: '4', name: 'Diwali' },
-  { id: '5', name: 'Makar Sankranti' },
-];
+interface CategoryOption {
+  id: string;
+  name: string;
+}
+
+interface FestivalOption {
+  id: string;
+  name: string;
+}
 
 /* ─── Variant Presets ────────────────────────────────── */
 
@@ -110,24 +129,82 @@ function generateLabel(unit: string, qty: string): string {
 
 /* ─── ProductForm Component ──────────────────────────── */
 
-export function ProductForm() {
+export function ProductForm({ productId, initialProduct }: ProductFormProps = {}) {
   const { toast } = useToast();
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState(0);
+  const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState<ProductFormData>({
-    name: '',
-    shortDescription: '',
-    description: '',
-    productType: 'REGULAR',
-    foodType: 'REGULAR',
-    categoryId: '',
-    festivalIds: [],
-    variants: [createEmptyVariant()],
-    isAvailable: true,
+  // Real categories and festivals from the database
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [festivals, setFestivals] = useState<FestivalOption[]>([]);
+  const [loadingFormData, setLoadingFormData] = useState(true);
+
+  const [form, setForm] = useState<ProductFormData>(() => {
+    if (initialProduct) {
+      return {
+        name: initialProduct.name,
+        shortDescription: initialProduct.shortDescription || '',
+        description: initialProduct.description,
+        productType: initialProduct.productType,
+        foodType: initialProduct.foodType,
+        categoryId: initialProduct.categoryId,
+        festivalIds: initialProduct.festivalIds || [],
+        isAvailable: initialProduct.isAvailable,
+        variants:
+          initialProduct.variants && initialProduct.variants.length > 0
+            ? initialProduct.variants.map((v) => ({
+                id: v.id || crypto.randomUUID(),
+                unitType: v.unitType || 'WEIGHT',
+                unit: v.unit || 'g',
+                quantityValue: String(v.quantityValue ?? ''),
+                displayLabel: v.displayLabel || '',
+                pricePaise:
+                  v.pricePaise != null ? String(Math.round(v.pricePaise / 100)) : '',
+                isAvailable: v.isAvailable,
+              }))
+            : [createEmptyVariant()],
+      };
+    }
+    return {
+      name: '',
+      shortDescription: '',
+      description: '',
+      productType: 'REGULAR',
+      foodType: 'REGULAR',
+      categoryId: '',
+      festivalIds: [],
+      variants: [createEmptyVariant()],
+      isAvailable: true,
+    };
   });
 
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(
+    initialProduct?.images || []
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Fetch real categories and festivals from the database
+  useEffect(() => {
+    let cancelled = false;
+    async function loadFormData() {
+      try {
+        const data = await getFormDataAction();
+        if (!cancelled) {
+          setCategories(data.categories);
+          setFestivals(data.festivals);
+        }
+      } catch (err) {
+        console.error('Failed to load form data:', err);
+        toast({ variant: 'error', message: 'Failed to load categories. Please refresh.' });
+      } finally {
+        if (!cancelled) setLoadingFormData(false);
+      }
+    }
+    loadFormData();
+    return () => { cancelled = true; };
+  }, []);
 
   /* ── Handlers ── */
 
@@ -216,11 +293,19 @@ export function ProductForm() {
       toast({ variant: 'warning', message: '2 photos maximum. Remove one to add another.' });
       return;
     }
-    setImageFiles((prev) => [...prev, ...files].slice(0, 2));
+    const newFiles = [...imageFiles, ...files].slice(0, 2);
+    setImageFiles(newFiles);
+    // Generate previews
+    setImagePreviews(newFiles.map((f) => URL.createObjectURL(f)));
   };
 
   const removeImage = (idx: number) => {
     setImageFiles((prev) => prev.filter((_, i) => i !== idx));
+    setImagePreviews((prev) => {
+      // Revoke URL
+      URL.revokeObjectURL(prev[idx]);
+      return prev.filter((_, i) => i !== idx);
+    });
   };
 
   const handleToggleFestival = (festivalId: string) => {
@@ -246,13 +331,59 @@ export function ProductForm() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async (markAvailable: boolean = true) => {
     if (!validate()) {
       toast({ variant: 'error', message: 'Please fix the errors before saving.' });
       return;
     }
-    // TODO: Send to API when backend is connected
-    toast({ variant: 'success', message: `Product "${form.name}" saved!` });
+
+    setSaving(true);
+    try {
+      // Build FormData with images
+      const fd = new FormData();
+      imageFiles.forEach((file, idx) => {
+        fd.append(`image_${idx}`, file);
+      });
+
+      const payload = {
+        name: form.name,
+        shortDescription: form.shortDescription,
+        description: form.description,
+        productType: form.productType,
+        foodType: form.foodType,
+        categoryId: form.categoryId,
+        festivalIds: form.festivalIds,
+        isAvailable: markAvailable ? form.isAvailable : false,
+        variants: form.variants.map((v) => ({
+          unit: v.unit,
+          quantityValue: v.quantityValue,
+          displayLabel: v.displayLabel,
+          pricePaise: v.pricePaise,
+          isAvailable: v.isAvailable,
+        })),
+      };
+
+      const result = productId
+        ? await updateProductAction(productId, payload, fd)
+        : await createProductAction(payload, fd);
+
+      if (result.success) {
+        toast({
+          variant: 'success',
+          message: `Product "${form.name}" ${productId ? 'updated' : 'created'} successfully!`,
+        });
+        // Navigate back to products list
+        router.push('/admin/products');
+        router.refresh();
+      } else {
+        toast({ variant: 'error', message: result.error || `Failed to ${productId ? 'update' : 'create'} product.` });
+      }
+    } catch (err: unknown) {
+      console.error('Save failed:', err);
+      toast({ variant: 'error', message: 'An error occurred while saving. Please try again.' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const sections = ['Basics', 'Type', 'Photos', 'Sizes & Prices'];
@@ -409,44 +540,60 @@ export function ProductForm() {
                   {errors.festivalIds && (
                     <p className="field-error mb-2">{errors.festivalIds}</p>
                   )}
-                  <div className="flex flex-wrap gap-2">
-                    {sampleFestivals.map((f) => {
-                      const selected = form.festivalIds.includes(f.id);
-                      return (
-                        <button
-                          key={f.id}
-                          type="button"
-                          onClick={() => handleToggleFestival(f.id)}
-                          className="rounded-full border px-3 py-1.5 text-sm font-medium transition-all"
-                          style={{
-                            borderColor: selected ? 'var(--color-primary)' : 'var(--color-border)',
-                            background: selected ? 'var(--color-primary)' : 'var(--color-surface)',
-                            color: selected ? 'white' : 'var(--color-text)',
-                          }}
-                          aria-pressed={selected}
-                        >
-                          {f.name}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {loadingFormData ? (
+                    <p className="text-sm" style={{ color: 'var(--color-muted)' }}>Loading festivals...</p>
+                  ) : festivals.length === 0 ? (
+                    <div className="text-sm" style={{ color: 'var(--color-muted)' }}>
+                      <p>No festivals found. <a href="/admin/festivals" className="underline" style={{ color: 'var(--color-primary)' }}>Create a festival first</a>.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {festivals.map((f) => {
+                        const selected = form.festivalIds.includes(f.id);
+                        return (
+                          <button
+                            key={f.id}
+                            type="button"
+                            onClick={() => handleToggleFestival(f.id)}
+                            className="rounded-full border px-3 py-1.5 text-sm font-medium transition-all"
+                            style={{
+                              borderColor: selected ? 'var(--color-primary)' : 'var(--color-border)',
+                              background: selected ? 'var(--color-primary)' : 'var(--color-surface)',
+                              color: selected ? 'white' : 'var(--color-text)',
+                            }}
+                            aria-pressed={selected}
+                          >
+                            {f.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Category select */}
               <div className="field-wrapper">
                 <label className="field-label" htmlFor="categoryId">Category</label>
-                <select
-                  id="categoryId"
-                  className={`field-input ${errors.categoryId ? 'field-input--error' : ''}`}
-                  value={form.categoryId}
-                  onChange={(e) => updateField('categoryId', e.target.value)}
-                >
-                  <option value="">Choose a category...</option>
-                  {sampleCategories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+                {loadingFormData ? (
+                  <p className="text-sm" style={{ color: 'var(--color-muted)' }}>Loading categories...</p>
+                ) : categories.length === 0 ? (
+                  <div className="text-sm" style={{ color: 'var(--color-muted)' }}>
+                    <p>No categories found. <a href="/admin/categories" className="underline" style={{ color: 'var(--color-primary)' }}>Create a category first</a>.</p>
+                  </div>
+                ) : (
+                  <select
+                    id="categoryId"
+                    className={`field-input ${errors.categoryId ? 'field-input--error' : ''}`}
+                    value={form.categoryId}
+                    onChange={(e) => updateField('categoryId', e.target.value)}
+                  >
+                    <option value="">Choose a category...</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                )}
                 {errors.categoryId && <p className="field-error">{errors.categoryId}</p>}
               </div>
             </div>
@@ -463,10 +610,10 @@ export function ProductForm() {
           </h2>
           <CardContent>
             <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-              Add 1–2 photos. Square images look best (at least 800×800 px).
+              Add 1–2 photos (optional). Square images look best (at least 800×800 px).
             </p>
             <div className="mt-4 grid grid-cols-2 gap-4">
-              {imageFiles.map((file, idx) => (
+              {imagePreviews.map((preview, idx) => (
                 <div
                   key={idx}
                   className="relative rounded-lg overflow-hidden border"
@@ -477,7 +624,7 @@ export function ProductForm() {
                   }}
                 >
                   <img
-                    src={URL.createObjectURL(file)}
+                    src={preview}
                     alt={`Product photo ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -676,11 +823,21 @@ export function ProductForm() {
             Cancel
           </Button>
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={handleSave} icon={<Eye size={16} />}>
-              Save as Unavailable
+            <Button
+              variant="secondary"
+              onClick={() => handleSave(false)}
+              icon={saving ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save as Unavailable'}
             </Button>
-            <Button variant="primary" onClick={handleSave} icon={<Save size={16} />}>
-              Save Product
+            <Button
+              variant="primary"
+              onClick={() => handleSave(true)}
+              icon={saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : productId ? 'Update Product' : 'Save Product'}
             </Button>
           </div>
         </div>
